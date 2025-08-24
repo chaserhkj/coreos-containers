@@ -1,0 +1,22 @@
+ARG RUNTIME_TYPE=rocm
+
+FROM pytorch-${RUNTIME_TYPE}-venv
+
+ARG RUNTIME_TYPE
+ARG RUNTIME_VERSION=6.4
+
+RUN curl https://raw.githubusercontent.com/comfyanonymous/ComfyUI/refs/heads/master/requirements.txt \
+        -o /tmp/comfyui-deps.txt &&  . /venv/bin/activate && \
+        uv pip install -r /tmp/comfyui-deps.txt \
+            --extra-index-url https://download.pytorch.org/whl/${RUNTIME_TYPE}${RUNTIME_VERSION} && \
+        mkdir /app && chown 1000:1000 -R /venv && uv cache clean
+
+RUN . /venv/bin/activate && uv pip install pip uv
+
+RUN apt-get update && apt-get install -y cmake libgl1 ffmpeg
+
+ENV HOME=/app
+
+USER 1000:1000
+
+ENTRYPOINT ["/app/entrypoint.sh"]

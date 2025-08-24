@@ -1,0 +1,9 @@
+FROM alpine
+
+RUN apk add --update --no-cache distcc gcc
+
+ENTRYPOINT ["/usr/bin/distccd", "--daemon", "--no-detach", "--log-stderr"]
+
+USER 1000
+
+EXPOSE 3632/tcp
