@@ -20,3 +20,5 @@ ENV HOME=/app
 USER 1000:1000
 
 ENTRYPOINT ["/app/entrypoint.sh"]
+
+EXPOSE 8188/tcp

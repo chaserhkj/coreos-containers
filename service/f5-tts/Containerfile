@@ -9,3 +9,5 @@ RUN . /venv/bin/activate && uv pip install f5-tts && uv cache clean
 RUN apt-get update && apt-get install -y ffmpeg
 
 ENTRYPOINT ["/venv/bin/f5-tts_infer-gradio", "--port", "7860", "--host", "0.0.0.0"]
+
+EXPOSE 7860/tcp
