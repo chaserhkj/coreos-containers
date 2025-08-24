@@ -1,6 +1,6 @@
 FROM alpine
 
-RUN apk add --update bash bash-complete
+RUN apk add --update bash bash-completion
 
 RUN apk add --update --no-cache podman buildah
 
