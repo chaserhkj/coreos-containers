@@ -1,7 +1,11 @@
 FROM alpine
 
+RUN apk add --update bash bash-complete
+
 RUN apk add --update --no-cache podman buildah
 
 RUN mkdir -p /etc/containers/containers.conf.d && \
     echo "[engine]" > /etc/containers/containers.conf.d/host.conf && \
     echo "remote = true" >> /etc/containers/containers.conf.d/host.conf
+
+ENTRYPOINT bash
