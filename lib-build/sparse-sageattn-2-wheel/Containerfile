@@ -22,9 +22,9 @@ WORKDIR /build
 
 RUN . /venv/bin/activate && pip wheel .
 
-#RUN mv /build/sageattention-*.whl /sageattention.whl
+RUN mv /build/spas_sage_attn*.whl /spas_sage_attn.whl
 
 # Storage stage
 FROM scratch
 
-#COPY --from=build /sageattention.whl /
+COPY --from=build /spas_sage_attn.whl /
