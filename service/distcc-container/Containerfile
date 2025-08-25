@@ -1,6 +1,7 @@
 FROM alpine
 
-RUN apk add --update --no-cache distcc gcc
+RUN --mount=type=cache,target=/var/cache/apk,id=apk \
+    apk add --update distcc gcc clang21
 
 ENTRYPOINT ["/usr/bin/distccd", "--daemon", "--no-detach", "--log-stderr"]
 

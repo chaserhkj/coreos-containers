@@ -1,12 +1,14 @@
 FROM ghcr.io/astral-sh/uv:python3.12-bookworm
 
-RUN uv venv /venv && . /venv/bin/activate && \
-    uv pip install torch==2.5.1+rocm6.2 torchaudio==2.5.1+rocm6.2 --extra-index-url https://download.pytorch.org/whl/rocm6.2 && \
-    uv cache clean
+RUN --mount=type=cache,target=/root/.cache/uv,id=uv \
+    uv venv /venv && . /venv/bin/activate && \
+    uv pip install torch==2.5.1+rocm6.2 torchaudio==2.5.1+rocm6.2 --extra-index-url https://download.pytorch.org/whl/rocm6.2
 
-RUN . /venv/bin/activate && uv pip install f5-tts && uv cache clean
+RUN --mount=type=cache,target=/root/.cache/uv,id=uv \
+    . /venv/bin/activate && uv pip install f5-tts
 
-RUN apt-get update && apt-get install -y ffmpeg
+RUN --mount=type=cache,target=/var/cache/apt,id=apt \
+    apt-get update && apt-get install -y ffmpeg
 
 ENTRYPOINT ["/venv/bin/f5-tts_infer-gradio", "--port", "7860", "--host", "0.0.0.0"]
 

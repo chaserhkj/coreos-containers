@@ -4,11 +4,15 @@ FROM nvidia/cuda:${CUDA_VERSION}-cudnn-devel-ubuntu24.04 AS build
 ARG PYTHON_VERSION=3.12.3
 ARG TORCH_VERSION=2.8.0
 
-RUN apt-get update && apt-get install -y python3-pip ninja-build && pip install uv --break-system-packages
+RUN --mount=type=cache,target=/var/cache/apt,id=apt \
+    --mount=type=cache,target=/root/.cache/pip,id=pip \
+    apt-get update && apt-get install -y python3-pip ninja-build && pip install uv --break-system-packages
 
-RUN uv --no-cache venv -p ${PYTHON_VERSION} /venv && . /venv/bin/activate && uv --no-cache pip install pip setuptools wheel packaging
+RUN --mount=type=cache,target=/root/.cache/uv,id=uv \
+    uv venv -p ${PYTHON_VERSION} /venv && . /venv/bin/activate && uv pip install pip setuptools wheel packaging
 
-RUN . /venv/bin/activate && uv --no-cache pip install torch==${TORCH_VERSION}
+RUN --mount=type=cache,target=/root/.cache/uv,id=uv \
+    . /venv/bin/activate && uv --no-cache pip install torch==${TORCH_VERSION}
 
 COPY vendor/SageAttention /build
 
