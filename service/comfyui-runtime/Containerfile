@@ -11,8 +11,12 @@ RUN curl https://raw.githubusercontent.com/comfyanonymous/ComfyUI/refs/heads/mas
             --extra-index-url https://download.pytorch.org/whl/${RUNTIME_TYPE}${RUNTIME_VERSION} && \
         mkdir /app && chown 1000:1000 -R /venv && uv cache clean
 
+# Install dependencies for various accelerated algorithms
+
+# For ComfyUI-Manager to manage custom nodes dependencies
 RUN . /venv/bin/activate && uv pip install pip uv
 
+# Other external dependencies required by various custom nodes
 RUN apt-get update && apt-get install -y cmake libgl1 ffmpeg
 
 ENV HOME=/app

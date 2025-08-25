@@ -1,0 +1,26 @@
+# Sage attention wheel build stage
+ARG CUDA_VERSION=12.8.1
+FROM nvidia/cuda:${CUDA_VERSION}-cudnn-devel-ubuntu24.04 AS build
+ARG PYTHON_VERSION=3.12.3
+ARG TORCH_VERSION=2.8.0
+
+RUN apt-get update && apt-get install -y python3-pip ninja-build && pip install uv --break-system-packages
+
+RUN uv --no-cache venv -p ${PYTHON_VERSION} /venv && . /venv/bin/activate && uv --no-cache pip install pip setuptools wheel packaging
+
+RUN . /venv/bin/activate && uv --no-cache pip install torch==${TORCH_VERSION}
+
+COPY vendor/SageAttention /build
+
+ENV TORCH_CUDA_ARCH_LIST="8.6;8.9;9.0;12.0+PTX"
+
+WORKDIR /build
+
+RUN . /venv/bin/activate && pip wheel .
+
+RUN mv /build/sageattention-*.whl /sageattention.whl
+
+# Sage attention wheel storage stage, tag this stage build for caching
+FROM scratch
+
+COPY --from=build /sageattention.whl /
