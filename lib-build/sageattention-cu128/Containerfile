@@ -1,0 +1,11 @@
+FROM pytorch/pytorch:2.8.0-cuda12.8-cudnn9-devel
+
+RUN pip install --system uv && uv pip install --system wheel
+
+RUN  git clone https://github.com/thu-ml/SageAttention.git /build
+
+WORKDIR /build
+
+ENV EXT_PARALLEL=4 NVCC_APPEND_FLAGS="--threads 8" MAX_JOBS=32
+
+RUN uv pip wheel .
