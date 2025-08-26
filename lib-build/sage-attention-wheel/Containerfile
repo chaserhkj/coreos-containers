@@ -22,9 +22,9 @@ WORKDIR /build
 
 RUN . /venv/bin/activate && pip wheel .
 
-RUN mv /build/sageattention-*.whl /sageattention.whl
+RUN mv /build/*.whl /
 
 # Sage attention wheel storage stage, tag this stage build for caching
 FROM scratch
 
-COPY --from=build /sageattention.whl /
+COPY --from=build /*.whl /
