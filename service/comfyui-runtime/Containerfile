@@ -51,9 +51,9 @@ set -e
 . /venv/bin/activate
 
 if [[ ${RUNTIME_TYPE} == cu ]]; then
-uv pip install /mnt/flash-attn/flash_attn.whl \
-    /mnt/sage-attn/sageattention.whl \
-    /mnt/spar-sage-attn/spar_sage_attn.whl \
+uv pip install /mnt/flash-attn/*.whl \
+    /mnt/sage-attn/*.whl \
+    /mnt/spar-sage-attn/*.whl \
     git+https://github.com/mit-han-lab/radial-attention
 fi
 EOF
