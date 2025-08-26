@@ -1,0 +1,21 @@
+FROM ghcr.io/astral-sh/uv:python3.12-bookworm AS build
+ARG PYTHON_VERSION=3.12.3
+
+RUN --mount=type=cache,target=/root/.cache/uv,id=uv \
+    uv venv -p ${PYTHON_VERSION} /venv && . /venv/bin/activate && \
+    uv pip install pip setuptools wheel
+
+COPY vendor/radial-attention /build
+
+WORKDIR /build
+
+COPY <<EOF setup.cfg
+[options]
+packages = radial_attn
+EOF
+
+RUN . /venv/bin/activate && pip wheel .
+
+FROM scratch
+
+COPY --from=build /build/*.whl /
