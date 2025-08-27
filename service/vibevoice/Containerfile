@@ -1,0 +1,17 @@
+FROM pytorch/pytorch:2.8.0-cuda12.8-cudnn9-devel
+
+RUN --mount=type=cache,target=/root/.cache/pip,id=pip \
+    pip install https://github.com/mjun0812/flash-attention-prebuild-wheels/releases/download/v0.4.11/flash_attn-2.8.3+cu128torch2.8-cp311-cp311-linux_x86_64.whl
+
+RUN --mount=type=cache,target=/var/cache/apt,id=apt \
+    apt-get update && apt-get install -y ffmpeg
+
+RUN git clone https://github.com/microsoft/VibeVoice /app
+
+WORKDIR /app
+
+RUN --mount=target=/mnt patch -p1 </mnt/front-end.patch
+
+RUN pip install -e .
+
+ENTRYPOINT ["python", "demo/gradio_demo.py", "--model_path", "microsoft/VibeVoice-1.5B"]
