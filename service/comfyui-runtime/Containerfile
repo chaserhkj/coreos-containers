@@ -13,7 +13,7 @@ FROM localhost/sparse-sageattn-2-wheel as spar-sage-attn-cu
 FROM localhost/pytorch-${RUNTIME_TYPE}-venv as flash-attn-rocm
 ENV VIRTUAL_ENV=/venv
 RUN --mount=type=cache,target=/root/.cache/uv,id=uv \
-    uv pip install triton==3.2.0 pip
+    uv pip install triton==3.2.0 pip setuptools wheel
 ENV FLASH_ATTENTION_TRITON_AMD_ENABLE="TRUE"
 RUN git clone https://github.com/ROCm/flash-attention.git &&\ 
     cd flash-attention &&\
