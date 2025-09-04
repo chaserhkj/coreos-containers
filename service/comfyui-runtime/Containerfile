@@ -66,12 +66,18 @@ RUN --mount=type=cache,target=/root/.cache/uv,id=uv \
 RUN --mount=type=cache,target=/var/cache/apt,id=apt \
     apt-get update && apt-get install -y cmake libgl1 ffmpeg
 
+# tini Init proxy
+RUN --mount=type=cache,target=/var/cache/apt,id=apt \
+    apt-get update && apt-get install -y tini
+
 RUN mkdir /app && chown 1000:1000 -R /venv /app
 
 ENV HOME=/app
 
 USER 1000:1000
 
-ENTRYPOINT ["/app/entrypoint.sh"]
+ENTRYPOINT ["tini", "--"]
+
+CMD ["/app/entrypoint.sh"]
 
 EXPOSE 8188/tcp
