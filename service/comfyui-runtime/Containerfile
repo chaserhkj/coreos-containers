@@ -41,7 +41,7 @@ fi
 
 uv pip install -r /tmp/comfyui-deps.txt \
     --extra-index-url \$index_url
-uv pip install -r /tmp/comfyui-manager.deps.txt \
+uv pip install -r /tmp/comfyui-manager-deps.txt \
     --extra-index-url \$index_url
 uv pip install xformers --index-url \$index_url
 EOF
