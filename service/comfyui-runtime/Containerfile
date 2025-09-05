@@ -27,6 +27,8 @@ set -e
 . /venv/bin/activate
 curl https://raw.githubusercontent.com/comfyanonymous/ComfyUI/refs/heads/master/requirements.txt \
     -o /tmp/comfyui-deps.txt 
+curl https://raw.githubusercontent.com/Comfy-Org/ComfyUI-Manager/refs/heads/main/requirements.txt \
+    -o /tmp/comfyui-manager-deps.txt
 
 if [[ ${RUNTIME_TYPE} == rocm ]]; then
     index_url="https://download.pytorch.org/whl/rocm6.4"
@@ -38,6 +40,8 @@ fi
 fi
 
 uv pip install -r /tmp/comfyui-deps.txt \
+    --extra-index-url \$index_url
+uv pip install -r /tmp/comfyui-manager.deps.txt \
     --extra-index-url \$index_url
 uv pip install xformers --index-url \$index_url
 EOF
