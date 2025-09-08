@@ -74,11 +74,7 @@ RUN --mount=type=cache,target=/var/cache/apt,id=apt \
 RUN --mount=type=cache,target=/var/cache/apt,id=apt \
     apt-get update && apt-get install -y tini
 
-RUN mkdir /app && chown 1000:1000 -R /venv /app
-
 ENV HOME=/app
-
-USER 1000:1000
 
 ENTRYPOINT ["tini", "--"]
 
