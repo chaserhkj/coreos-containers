@@ -1,0 +1,40 @@
+# Add systemd socket activation capability to debian-based image
+ARG BASE
+# Build latest socat for this system
+FROM ${BASE} as socat
+ARG SOCAT_VERSION=1.8.0.3
+
+RUN --mount=type=cache,target=/var/cache/apt,id=apt \
+    apt-get update && apt-get install -y build-essential
+
+ADD http://www.dest-unreach.org/socat/download/socat-${SOCAT_VERSION}.tar.gz /build/src.tar.gz
+
+WORKDIR /build
+
+RUN tar -xf src.tar.gz && cd socat-${SOCAT_VERSION} && \
+    ./configure --prefix=/usr/local && make && make install
+
+FROM ${BASE}
+ARG BASE_CMD
+ARG FWD_ADDR=127.8.8.1
+ARG FWD_PORT=8000
+ARG FWD_PROTO=tcp
+ARG POLL_INT=1
+
+# Install utils if they are now already installed
+RUN --mount=type=cache,target=/var/cache/apt,id=apt \
+    command -v tini >/dev/null 2>&1 || ( apt-get update && apt-get install -y tini ) ; \
+    command -v nc >/dev/null 2>&1 || ( apt-get update && apt-get install -y netcat-openbsd ) ;
+
+COPY --chmod=0755 --from=socat /usr/local/bin/socat /usr/local/bin
+
+ENV SD_SOCK_ACT_BASE_CMD="${BASE_CMD}" \
+    SD_SOCK_ACT_FWD_ADDR="${FWD_ADDR}" \
+    SD_SOCK_ACT_FWD_PORT="${FWD_PORT}" \
+    SD_SOCK_ACT_FWD_PROTO="${FWD_PROTO}" \
+    SD_SOCK_ACT_POLL_INT="${POLL_INT}"
+
+COPY --chmod=0755 entrypoint-sd-sock-act.sh /
+
+ENTRYPOINT ["tini", "--", "/entrypoint-sd-sock-act.sh"]
+CMD []
