@@ -7,6 +7,7 @@ SRV_PID=$!
 clean() {
     echo "[SD_SOCK_ACT] Shutting down service process..."
     kill $SRV_PID
+    exit 0
 }
 trap "clean" EXIT
 
