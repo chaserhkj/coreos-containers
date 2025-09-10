@@ -1,4 +1,5 @@
-#!/usr/bin/env bash
+#!/usr/bin/env sh
+# Use sh for compatibility
 
 ${SD_SOCK_ACT_BASE_CMD} &
 
@@ -9,15 +10,12 @@ clean() {
 }
 trap "clean" EXIT
 
-[[ ${SD_SOCK_ACT_FWD_PROTO} == tcp ]] && NC_FLAG="-t"
-[[ ${SD_SOCK_ACT_FWD_PROTO} == udp ]] && NC_FLAG="-u"
-
-until nc -z $NC_FLAG ${SD_SOCK_ACT_FWD_ADDR} ${SD_SOCK_ACT_FWD_PORT} >/dev/null 2>&1
+until socat /dev/null ${SD_SOCK_ACT_FWD_PROTO}:${SD_SOCK_ACT_FWD_ADDR}:${SD_SOCK_ACT_FWD_PORT} >/dev/null 2>&1
 do sleep ${SD_SOCK_ACT_POLL_INT};
 echo "[SD_SOCK_ACT] Waiting for server to come up..."
 done;
 
-if [[ -n $SD_SOCK_ACT_IDLE_TIMEOUT ]]; then
+if [[ ! -z $SD_SOCK_ACT_IDLE_TIMEOUT ]]; then
     SD_SOCK_ACT_SOCAT_FLAG="$SD_SOCK_ACT_SOCAT_FLAG -T$SD_SOCK_ACT_IDLE_TIMEOUT" 
 fi
 
