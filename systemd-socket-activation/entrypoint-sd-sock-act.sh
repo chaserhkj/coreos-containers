@@ -16,7 +16,7 @@ do sleep ${SD_SOCK_ACT_POLL_INT};
 echo "[SD_SOCK_ACT] Waiting for server to come up..."
 done;
 
-if [[ ! -z $SD_SOCK_ACT_IDLE_TIMEOUT ]]; then
+if [ ! -z $SD_SOCK_ACT_IDLE_TIMEOUT ]; then
     SD_SOCK_ACT_SOCAT_FLAG="$SD_SOCK_ACT_SOCAT_FLAG -T$SD_SOCK_ACT_IDLE_TIMEOUT" 
 fi
 
