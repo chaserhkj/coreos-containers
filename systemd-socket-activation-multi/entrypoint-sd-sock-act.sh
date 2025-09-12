@@ -11,11 +11,10 @@ clean() {
 }
 trap "clean" EXIT
 
-sockets=($SD_SOCK_ACT_FWD_TARGETS)
-tunnel_pids=()
+tunnel_pids=""
 sock_fd=3
 
-for sock in "${sockets[@]}"; do
+for sock in $SD_SOCK_ACT_FWD_TARGETS; do
 
 until socat /dev/null $sock >/dev/null 2>&1
 do sleep ${SD_SOCK_ACT_POLL_INT};
@@ -28,9 +27,9 @@ fi
 
 echo "[SD_SOCK_ACT] Start to forward connections from passed socket /dev/fd/$sock_fd to $sock"
 socat $SD_SOCK_ACT_SOCAT_FLAG ACCEPT-FD:$sock_fd,fork $sock &
-tunnel_pids+=$!
+tunnel_pids="$tunnel_pids $!"
 
 sock_fd=$((sock_fd + 1))
 done
 
-wait "${tunnel_pids[@]}"
+wait $tunnel_pids
