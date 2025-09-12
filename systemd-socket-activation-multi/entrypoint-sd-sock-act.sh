@@ -1,7 +1,7 @@
 #!/usr/bin/env sh
 # Use sh for compatibility
 
-${SD_SOCK_ACT_BASE_CMD} &
+eval "${SD_SOCK_ACT_BASE_CMD}" &
 
 SRV_PID=$!
 clean() {
