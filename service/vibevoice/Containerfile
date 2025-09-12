@@ -6,12 +6,13 @@ RUN --mount=type=cache,target=/root/.cache/pip,id=pip \
 RUN --mount=type=cache,target=/var/cache/apt,id=apt \
     apt-get update && apt-get install -y ffmpeg
 
-RUN git clone https://github.com/microsoft/VibeVoice /app
+COPY vendor/VibeVoice /app
 
 WORKDIR /app
 
 RUN --mount=target=/mnt patch -p1 </mnt/front-end.patch
 
-RUN pip install -e .
+RUN --mount=type=cache,target=/root/.cache/pip,id=pip \
+    pip install -e .
 
 ENTRYPOINT ["python", "demo/gradio_demo.py", "--model_path", "microsoft/VibeVoice-1.5B"]
