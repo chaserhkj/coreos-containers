@@ -1,0 +1,22 @@
+# This installs llama-swap and podman on top of an image
+# Base image could be, for example, llama.cpp or vLLM
+ARG BASE_IMG=debian:bookworm-slim
+FROM ghcr.io/mostlygeek/llama-swap:cpu AS llama-swap
+FROM ${BASE_IMG}
+
+COPY --from=llama-swap /app/llama-swap /usr/local/bin
+
+# Create links for llama-server at sys paths if they are found
+RUN [ -f /app/llama-server ] && ln -s /app/*.so /usr/local/lib && \
+    ln -s /app/llama-server /usr/local/bin
+
+# Install podman, and configure podman to remotely connect to host podman
+RUN --mount=type=cache,target=/var/cache/apk,id=apk \
+    apt-get update && apt-get install -y podman
+
+RUN mkdir -p /etc/containers/containers.conf.d/ && \
+    echo "[engine]\nremote = true" > /etc/containers/containers.conf.d/host.conf
+
+ENTRYPOINT ["llama-swap"]
+CMD ["-config", "/config.yaml"]
+
