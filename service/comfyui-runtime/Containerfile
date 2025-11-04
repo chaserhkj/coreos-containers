@@ -7,17 +7,14 @@ RUN curl -o /flash_attn-2.8.3+cu128torch2.8-cp312-cp312-linux_x86_64.whl \
     https://github.com/mjun0812/flash-attention-prebuild-wheels/releases/download/v0.4.11/flash_attn-2.8.3+cu128torch2.8-cp312-cp312-linux_x86_64.whl
 # Others are built externally, just import them here
 FROM localhost/sage-attention-wheel as sage-attn-cu
-FROM localhost/sparse-sageattn-2-wheel as spar-sage-attn-cu
 # Prebuilt wheels for rocm platform
 # Dummies for now
 FROM scratch as flash-attn-rocm
 FROM scratch as sage-attn-rocm
-FROM scratch as spar-sage-attn-rocm
 
 # Proxy aliases
 FROM flash-attn-${RUNTIME_TYPE} as flash-attn
 FROM sage-attn-${RUNTIME_TYPE} as sage-attn
-FROM spar-sage-attn-${RUNTIME_TYPE} as spar-sage-attn
 
 FROM localhost/pytorch-${RUNTIME_TYPE}-venv
 ARG RUNTIME_TYPE
@@ -49,7 +46,6 @@ EOF
 # Install dependencies for various accelerated algorithms
 RUN --mount=from=flash-attn,target=/mnt/flash-attn \
     --mount=from=sage-attn,target=/mnt/sage-attn \
-    --mount=from=spar-sage-attn,target=/mnt/spar-sage-attn \
     --mount=type=cache,target=/root/.cache/uv,id=uv bash <<EOF
 set -e
 . /venv/bin/activate
@@ -57,7 +53,6 @@ set -e
 if [[ ${RUNTIME_TYPE} == cu ]]; then
 uv pip install /mnt/flash-attn/*.whl \
     /mnt/sage-attn/*.whl \
-    /mnt/spar-sage-attn/*.whl \
     git+https://github.com/mit-han-lab/radial-attention
 fi
 EOF
