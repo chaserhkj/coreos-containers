@@ -1,5 +1,5 @@
-FROM ghcr.io/astral-sh/uv:python3.13-bookworm AS build
-ARG PYTHON_VERSION=3.13.9
+FROM ghcr.io/astral-sh/uv:python3.12-bookworm AS build
+ARG PYTHON_VERSION=3.12.3
 
 RUN --mount=type=cache,target=/root/.cache/uv,id=uv \
     uv venv -p ${PYTHON_VERSION} /venv && . /venv/bin/activate && \
