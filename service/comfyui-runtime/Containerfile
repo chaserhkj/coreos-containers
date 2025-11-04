@@ -3,8 +3,8 @@ ARG RUNTIME_TYPE=rocm
 # Prebuilt wheels for cuda platform
 # Download prebuilt flash attn from github
 FROM alpine/curl as flash-attn-cu
-RUN curl -o /flash_attn-2.8.3+cu128torch2.8-cp312-cp312-linux_x86_64.whl \
-    https://github.com/mjun0812/flash-attention-prebuild-wheels/releases/download/v0.4.11/flash_attn-2.8.3+cu128torch2.8-cp312-cp312-linux_x86_64.whl
+RUN curl -o /flash_attn-2.8.3+cu130torch2.9-cp313-cp313-win_amd64.whl \
+    https://github.com/mjun0812/flash-attention-prebuild-wheels/releases/download/v0.4.19/flash_attn-2.8.3+cu130torch2.9-cp313-cp313-win_amd64.whl
 # Others are built externally, just import them here
 FROM localhost/sage-attention-wheel as sage-attn-cu
 FROM localhost/sparse-sageattn-2-wheel as spar-sage-attn-cu
@@ -33,7 +33,7 @@ curl https://raw.githubusercontent.com/Comfy-Org/ComfyUI-Manager/refs/heads/main
 if [[ ${RUNTIME_TYPE} == rocm ]]; then
     index_url="https://download.pytorch.org/whl/rocm6.4"
 else if [[ ${RUNTIME_TYPE} == cu ]]; then
-    index_url="https://download.pytorch.org/whl/cu128"
+    index_url="https://download.pytorch.org/whl/cu130"
 else
     exit 1
 fi
