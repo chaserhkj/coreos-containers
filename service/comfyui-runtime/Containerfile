@@ -1,69 +1,39 @@
+FROM scratch as dep-files
+
+ADD https://raw.githubusercontent.com/comfyanonymous/ComfyUI/refs/heads/master/requirements.txt /comfyui-deps.txt
+
+ADD https://raw.githubusercontent.com/Comfy-Org/ComfyUI-Manager/refs/heads/main/requirements.txt /comfyui-manager-deps.txt
+
+FROM ghcr.io/astral-sh/uv:python3.13-trixie
 ARG RUNTIME_TYPE=rocm
 
-# Prebuilt wheels for cuda platform
-# Download prebuilt flash attn from github
-FROM alpine/curl as flash-attn-cu
-RUN curl -o /flash_attn-2.8.3+cu128torch2.8-cp312-cp312-linux_x86_64.whl \
-    https://github.com/mjun0812/flash-attention-prebuild-wheels/releases/download/v0.4.11/flash_attn-2.8.3+cu128torch2.8-cp312-cp312-linux_x86_64.whl
-# Others are built externally, just import them here
-FROM localhost/sage-attention-wheel as sage-attn-cu
-FROM localhost/radial-attention-wheel as radial-attn-cu
-# Prebuilt wheels for rocm platform
-# Dummies for now
-FROM scratch as flash-attn-rocm
-FROM scratch as sage-attn-rocm
-FROM scratch as radial-attn-rocm
+RUN uv venv /venv
 
-# Proxy aliases
-FROM flash-attn-${RUNTIME_TYPE} as flash-attn
-FROM sage-attn-${RUNTIME_TYPE} as sage-attn
-FROM radial-attn-${RUNTIME_TYPE} as radial-attn
+ENV VIRTUAL_ENV=/venv
 
-FROM localhost/pytorch-${RUNTIME_TYPE}-venv
-ARG RUNTIME_TYPE
-
-RUN --mount=type=cache,target=/root/.cache/uv,id=uv bash <<EOF
-set -e
-. /venv/bin/activate
-curl https://raw.githubusercontent.com/comfyanonymous/ComfyUI/refs/heads/master/requirements.txt \
-    -o /tmp/comfyui-deps.txt 
-curl https://raw.githubusercontent.com/Comfy-Org/ComfyUI-Manager/refs/heads/main/requirements.txt \
-    -o /tmp/comfyui-manager-deps.txt
-
-if [[ ${RUNTIME_TYPE} == rocm ]]; then
-    index_url="https://download.pytorch.org/whl/rocm6.4"
-else if [[ ${RUNTIME_TYPE} == cu ]]; then
-    index_url="https://download.pytorch.org/whl/cu128"
-else
-    exit 1
-fi
-fi
-
-uv pip install -r /tmp/comfyui-deps.txt \
-    --extra-index-url \$index_url
-uv pip install -r /tmp/comfyui-manager-deps.txt \
-    --extra-index-url \$index_url
-uv pip install xformers --index-url \$index_url
-EOF
+RUN --mount=type=cache,target=/root/.cache/uv,id=uv \
+    --mount=from=dep-files,target=/mnt/dep-files \
+    [ ${RUNTIME_TYPE} = rocm ] && index_url="https://download.pytorch.org/whl/rocm7.1"; \
+    [ ${RUNTIME_TYPE} = cu ] && index_url="https://download.pytorch.org/whl/cu130"; \
+    uv pip install -r /mnt/dep-files/comfyui-deps.txt \
+        --extra-index-url \$index_url && \
+    uv pip install -r /mnt/dep-files/comfyui-manager-deps.txt \
+        --extra-index-url \$index_url
 
 # Install dependencies for various accelerated algorithms
-RUN --mount=from=flash-attn,target=/mnt/flash-attn \
-    --mount=from=sage-attn,target=/mnt/sage-attn \
-    --mount=from=radial-attn,target=/mnt/radial-attn \
-    --mount=type=cache,target=/root/.cache/uv,id=uv bash <<EOF
-set -e
-. /venv/bin/activate
+# flash attention
+RUN --mount=type=cache,target=/root/.cache/uv,id=uv \
+    [ ${RUNTIME_TYPE} = rocm ] || exit 0; \
+    uv pip install flash-attn --no-build-isolation
 
-if [[ ${RUNTIME_TYPE} == cu ]]; then
-uv pip install /mnt/flash-attn/*.whl \
-    /mnt/sage-attn/*.whl \
-    /mnt/radial-attn/*.whl
-fi
-EOF
+# sage attention
+RUN --mount=type=cache,target=/root/.cache/uv,id=uv \
+    [ ${RUNTIME_TYPE} = rocm ] || exit 0; \
+    uv pip install sageattention==2.2.0 --no-build-isolation
 
 # For ComfyUI-Manager to manage custom nodes dependencies
 RUN --mount=type=cache,target=/root/.cache/uv,id=uv \
-    . /venv/bin/activate && uv pip install pip uv
+    uv pip install pip uv
 
 # Other external dependencies required by various custom nodes
 RUN --mount=type=cache,target=/var/cache/apt,id=apt \
