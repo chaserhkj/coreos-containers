@@ -17,4 +17,4 @@ until [ -e /tmp/service-pty ]; do
 done
 
 echo "[STDIO_UNIX] Forwarding connections from $UNIX_SOCKET_PATH to STDIO through pty, max-children=1 is set"
-socat UNIX-LISTEN:${UNIX_SOCKET_PATH},fork,max-children=1 'FILE:/tmp/service-pty,rawer'
+socat UNIX-LISTEN:${UNIX_SOCKET_PATH},unlink,fork,max-children=1 'FILE:/tmp/service-pty,rawer'
