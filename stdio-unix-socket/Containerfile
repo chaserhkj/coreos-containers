@@ -1,4 +1,4 @@
-# Add systemd socket activation capability base image
+# A base image that connects a stdio program to a unix socket
 ARG BASE
 # Build deps: latest socat, tini and nc, in static linkage
 FROM alpine as build
@@ -23,13 +23,16 @@ RUN cd /build-tini && unzip src.zip && cd tini-master && \
 
 FROM ${BASE}
 ARG BASE_CMD
+ARG SOCKET_PATH=/socket
 
 # Install utils
 COPY --chmod=0755 --from=build /usr/local/bin/socat /usr/local/bin/tini /usr/local/bin
 
-ENV SD_SOCK_ACT_BASE_CMD="${BASE_CMD}"
+ENV STDIO_BASE_CMD="${BASE_CMD}"
 
-COPY --chmod=0755 entrypoint-sd-sock-act.sh /
+ENV UNIX_SOCKET_PATH="${SOCKET_PATH}"
 
-ENTRYPOINT ["tini", "--", "/entrypoint-sd-sock-act.sh"]
+COPY --chmod=0755 entrypoint-socat.sh /
+
+ENTRYPOINT ["tini", "--", "/entrypoint-socat.sh"]
 CMD []
