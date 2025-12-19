@@ -1,5 +1,4 @@
 FROM quay.io/fedora/fedora-coreos:stable
 
 RUN dnf install -y distrobox gamescope cage labwc vulkan-tools kernel-modules-extra && \
-    dnf clean all && \
-    ostree container commit
+    dnf clean all
