@@ -4,8 +4,11 @@ ADD https://raw.githubusercontent.com/comfyanonymous/ComfyUI/refs/heads/master/r
 
 ADD https://raw.githubusercontent.com/Comfy-Org/ComfyUI-Manager/refs/heads/main/requirements.txt /comfyui-manager-deps.txt
 
+COPY torch.txt /torch.txt
+
 FROM ghcr.io/astral-sh/uv:python3.13-trixie
-ARG RUNTIME_TYPE=rocm
+ARG TORCH_BACKEND=nightly/rocm7.1
+ARG INSTALL_ATTNS=false
 
 RUN uv venv /venv
 
@@ -13,23 +16,23 @@ ENV VIRTUAL_ENV=/venv
 
 RUN --mount=type=cache,target=/root/.cache/uv,id=uv \
     --mount=from=dep-files,target=/mnt/dep-files \
-    [ ${RUNTIME_TYPE} = rocm ] && index_url="https://download.pytorch.org/whl/rocm7.1"; \
-    [ ${RUNTIME_TYPE} = cu ] && index_url="https://download.pytorch.org/whl/cu130"; \
+    uv pip install -r /mnt/dep-files/torch.txt \
+        -i https://download.pytorch.org/whl/${TORCH_BACKEND} && \
     uv pip install -r /mnt/dep-files/comfyui-deps.txt \
-        --extra-index-url \$index_url && \
+        --excludes /mnt/dep-files/torch.txt && \
     uv pip install -r /mnt/dep-files/comfyui-manager-deps.txt \
-        --extra-index-url \$index_url
+        --excludes /mnt/dep-files/torch.txt
 
 # Install dependencies for various accelerated algorithms
 # flash attention
 RUN --mount=type=cache,target=/root/.cache/uv,id=uv \
-    [ ${RUNTIME_TYPE} = rocm ] || exit 0; \
-    uv pip install flash-attn --no-build-isolation
+    if [ ${INSTALL_ATTNS} = "true" ]; then \
+    uv pip install flash-attn --no-build-isolation; fi
 
 # sage attention
 RUN --mount=type=cache,target=/root/.cache/uv,id=uv \
-    [ ${RUNTIME_TYPE} = rocm ] || exit 0; \
-    uv pip install sageattention==2.2.0 --no-build-isolation
+    if [ ${INSTALL_ATTNS} = "true" ]; then \
+    uv pip install sageattention==2.2.0 --no-build-isolation; fi
 
 # For ComfyUI-Manager to manage custom nodes dependencies
 RUN --mount=type=cache,target=/root/.cache/uv,id=uv \
