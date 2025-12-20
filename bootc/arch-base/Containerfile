@@ -1,0 +1,36 @@
+# From ../../base/arch-aur-builder
+FROM arch-aur-builder as aur-builder
+
+RUN aur sync -n --noview podlet
+
+# Base arch image with extended package setups, to be used as base for site-specific images
+FROM ghcr.io/bootcrew/arch-bootc:latest
+
+# Remove all thinning options in pacman.conf, these are designed for service containers but we are not
+# Note that /etc/machine-id needs to be added if this is done
+# This WILL be handled if image is eventually consumed by distrobox/bootc
+# and we don't need to do anything about it
+RUN sed -i '/^NoExtract *=.*$/d' /etc/pacman.conf
+
+# Reinstall everything to obtain the thinned files of default packages
+# This effectively updates everything as well so we update keyring alongside
+RUN pacman-key --init && pacman -Sy && \
+    pacman -S archlinux-keyring --noconfirm && \
+    pacman -Qq | pacman -S --noconfirm - && \
+    pacman -Scc --noconfirm
+
+# locale-gen
+RUN sed -i 's/#en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen && locale-gen
+
+# Local repo configurations
+RUN cp -f /etc/pacman.conf /etc/pacman-local-repo.conf && \ 
+    printf '[sitepkgs]\nSigLevel = Never\nServer = file:///var/local-repo/\n' | tee -a /etc/pacman-local-repo.conf
+
+# Common tools
+RUN pacman -Sy --needed --noconfirm sudo vim bash-completion && pacman -Scc --noconfirm
+
+# Container tools
+RUN --mount=type=bind,from=aur-builder,source=/var/build/repo,target=/var/local-repo \
+    pacman -Sy --needed --noconfirm podman buildah skopeo umoci docker-compose podman-docker distrobox && \
+    pacman -Sy --config /etc/pacman-local-repo.conf --needed --noconfirm podlet && \
+    pacman -Scc --noconfirm && systemctl enable podman.socket

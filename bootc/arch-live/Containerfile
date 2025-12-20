@@ -1,0 +1,21 @@
+# From ../arch-base
+FROM bootc-arch-base as builder
+
+RUN pacman -Sy git kexec-tools --needed --noconfirm && pacman -Scc --noconfirm
+
+FROM builder as initramfs-build
+
+RUN git clone https://github.com/chaserhkj/bootc-live /work
+WORKDIR /work
+
+RUN for mod in /work/modules.d/* ; do ln -s $mod /usr/lib/dracut/modules.d; done;
+RUN /bin/sh for-container.sh build-initrd-all-mods
+
+FROM bootc-arch-base
+
+RUN --mount=type=bind,from=initramfs-build,target=/tmp \
+    cp -f /tmp/work/initrd-all-mods.img /usr/lib/modules/*/initramfs.img
+
+# Create a user "liveuser" without password, and configure sudo for it
+RUN useradd -m liveuser && passwd -d liveuser && \
+    echo 'liveuser ALL=(ALL) NOPASSWD: ALL' > /etc/sudoers.d/99liveuser.conf
