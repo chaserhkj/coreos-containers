@@ -1,0 +1,10 @@
+# Host-specific configuration stage, adds configuration only
+# Assuming we are building from ../arch-base, but this could be overridden
+FROM bootc-arch-base
+
+# Adding layer
+COPY rootfs /
+
+# Run setup script from build context, if any
+RUN --mount=type=bind,target=/tmp \
+    [ -f /tmp/setup.sh ] && bash /tmp/setup.sh

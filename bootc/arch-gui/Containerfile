@@ -1,0 +1,5 @@
+# From ../arch-base
+FROM bootc-arch-base
+
+RUN pacman -Sy --noconfirm --needed gamescope cage labwc niri sway vulkan-tools && \
+    pacman -Scc  --noconfirm
