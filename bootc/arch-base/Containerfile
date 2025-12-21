@@ -1,10 +1,12 @@
+# Overwrite-able bootc base, in case ghcr CI version is stale
+ARG BOOTC_BASE=ghcr.io/bootcrew/arch-bootc:latest
 # From ../../base/arch-aur-builder
 FROM arch-aur-builder as aur-builder
 
 RUN aur sync -n --noview podlet
 
 # Base arch image with extended package setups, to be used as base for site-specific images
-FROM ghcr.io/bootcrew/arch-bootc:latest
+FROM ${BOOTC_BASE}
 
 # Remove all thinning options in pacman.conf, these are designed for service containers but we are not
 # Note that /etc/machine-id needs to be added if this is done
@@ -34,3 +36,7 @@ RUN --mount=type=bind,from=aur-builder,source=/var/build/repo,target=/var/local-
     pacman -Sy --needed --noconfirm podman buildah skopeo umoci docker-compose podman-docker distrobox && \
     pacman -Sy --config /etc/pacman-local-repo.conf --needed --noconfirm podlet && \
     pacman -Scc --noconfirm && systemctl enable podman.socket
+
+# Base firewall and networking setup
+RUN pacman -Sy --needed --noconfirm ufw openssh zerotier-one wireguard-tools && pacman -Scc --noconfirm &&\
+    systemctl enable systemd-networkd ufw zerotier-one
