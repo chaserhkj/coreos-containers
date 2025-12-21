@@ -21,3 +21,10 @@ RUN pacman -Sy --needed --noconfirm sudo vim bash-completion && pacman -Scc --no
 # Create a user "liveuser" without password, and configure sudo for it
 RUN useradd -m liveuser && passwd -d liveuser && \
     echo 'liveuser ALL=(ALL) NOPASSWD: ALL' > /etc/sudoers.d/99_liveuser
+
+# Wireless connection manager
+RUN pacman -Sy --needed --noconfirm iwd && pacman -Scc --noconfirm && \
+    systemctl enable iwd
+
+# Layering other live-system-specific configurations
+COPY rootfs /
