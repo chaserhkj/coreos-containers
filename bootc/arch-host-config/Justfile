@@ -11,4 +11,4 @@ configure-image host:
     host_dir="{{justfile_directory()}}/hosts/{{host}}"
     [ -f $host_dir/BASE ] && read -r base_img < "$host_dir/BASE"
     [ -n $base_img ] && base_flag="--from=$base_img"
-    podman build -t localhost/bootc-arch-host:{{host}} "$base_flag" "$host_dir"
+    podman build -t localhost/bootc-arch-host:{{host}} -f Containerfile "$base_flag" "$host_dir"
