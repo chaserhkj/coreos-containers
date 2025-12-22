@@ -5,6 +5,17 @@ FROM arch-aur-builder as aur-builder
 
 RUN aur sync -n --noview podlet
 
+# Build ssh-key-dir to support $HOME/.ssh/authorized_keys.d
+FROM archlinux as ssh-key-dir
+
+RUN pacman -Sy --noconfirm rust git make
+
+RUN git clone https://github.com/coreos/ssh-key-dir /work
+
+WORKDIR /work
+
+RUN mkdir -p /target && make RELEASE=1 && make install DESTDIR=/target RELEASE=1
+
 # Base arch image with extended package setups, to be used as base for site-specific images
 FROM ${BOOTC_BASE}
 
@@ -40,3 +51,6 @@ RUN --mount=type=bind,from=aur-builder,source=/var/build/repo,target=/var/local-
 # Base firewall and networking setup
 RUN pacman -Sy --needed --noconfirm ufw openssh zerotier-one wireguard-tools && pacman -Scc --noconfirm &&\
     systemctl enable systemd-networkd ufw zerotier-one
+
+# Install ssh-key-dir
+COPY --from=ssh-key-dir /target /
