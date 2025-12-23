@@ -28,5 +28,8 @@ RUN useradd -m liveuser && passwd -d liveuser && \
 RUN pacman -Sy --needed --noconfirm iwd && pacman -Scc --noconfirm && \
     systemctl enable iwd
 
+# Tools associated with installation tasks
+RUN pacman -Sy --needed --noconfirm efibootmgr gptfdisk parted ddrescue && pacman -Scc --noconfirm
+
 # Layering other live-system-specific configurations
 COPY rootfs /
