@@ -4,11 +4,11 @@ FROM bootc-arch-base
 
 # Add additional host-specific packages from build context, if any
 RUN --mount=type=bind,target=/tmp \
-    [ -f /tmp/PKGS ] && { pacman -Sy - --noconfirm --needed </tmp/PKGS && pacman -Scc --noconfirm; }
+    [ -f /tmp/PKGS ] && { pacman -Sy - --noconfirm --needed </tmp/PKGS && pacman -Scc --noconfirm; } || exit 0
 
 # Adding layer
 COPY rootfs /
 
 # Run setup script from build context, if any
 RUN --mount=type=bind,target=/tmp \
-    [ -f /tmp/setup.sh ] && bash /tmp/setup.sh
+    [ -f /tmp/setup.sh ] && bash /tmp/setup.sh || exit 0
