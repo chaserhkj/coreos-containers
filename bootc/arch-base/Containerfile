@@ -46,11 +46,14 @@ RUN pacman -Sy --needed --noconfirm sudo vim bash-completion && pacman -Scc --no
 RUN --mount=type=bind,from=aur-builder,source=/var/build/repo,target=/var/local-repo \
     pacman -Sy --needed --noconfirm podman buildah skopeo umoci docker-compose podman-docker distrobox && \
     pacman -Sy --config /etc/pacman-local-repo.conf --needed --noconfirm podlet && \
-    pacman -Scc --noconfirm && systemctl enable podman.socket
+    pacman -Scc --noconfirm
 
 # Base firewall and networking setup
-RUN pacman -Sy --needed --noconfirm ufw openssh zerotier-one wireguard-tools && pacman -Scc --noconfirm &&\
-    systemctl enable systemd-networkd ufw zerotier-one
+RUN pacman -Sy --needed --noconfirm ufw openssh zerotier-one wireguard-tools && pacman -Scc --noconfirm
 
 # Install ssh-key-dir
 COPY --from=ssh-key-dir /target /
+
+# Copy rootfs that has all file-based configurations
+
+COPY rootfs /
