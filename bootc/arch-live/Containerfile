@@ -25,8 +25,7 @@ RUN useradd -m liveuser && passwd -d liveuser && \
     echo 'liveuser ALL=(ALL) NOPASSWD: ALL' > /etc/sudoers.d/99_liveuser
 
 # Wireless connection manager
-RUN pacman -Sy --needed --noconfirm iwd && pacman -Scc --noconfirm && \
-    systemctl enable iwd
+RUN pacman -Sy --needed --noconfirm iwd && pacman -Scc --noconfirm
 
 # Tools associated with installation tasks
 RUN pacman -Sy --needed --noconfirm efibootmgr gptfdisk parted ddrescue && pacman -Scc --noconfirm
