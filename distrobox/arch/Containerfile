@@ -1,4 +1,4 @@
-FROM archlinux as yay-base
+FROM docker.io/archlinux/archlinux as yay-base
 
 RUN printf '[archlinuxcn]\nServer = https://repo.archlinuxcn.org/$arch\n' >> /etc/pacman.conf
 

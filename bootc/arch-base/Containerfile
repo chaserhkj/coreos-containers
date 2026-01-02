@@ -6,7 +6,7 @@ FROM arch-aur-builder as aur-builder
 RUN aur sync -n --noview podlet
 
 # Build ssh-key-dir to support $HOME/.ssh/authorized_keys.d
-FROM archlinux as ssh-key-dir
+FROM docker.io/archlinux/archlinux as ssh-key-dir
 
 RUN pacman -Sy --noconfirm rust git make
 
