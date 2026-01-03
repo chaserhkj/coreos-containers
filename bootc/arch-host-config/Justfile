@@ -12,4 +12,10 @@ configure-image host:
     [ -f $host_dir/BASE ] && read -r base_img < "$host_dir/BASE"
     [ -n $base_img ] && base_flag="--from=$base_img"
     export CREDS="$(gpg --decrypt creds.gpg)" || exit 1
-    podman build --secret=id=creds,env=CREDS -t localhost/bootc-arch-host:{{host}} -f Containerfile "$base_flag" "$host_dir"
+    if [ -f $host_dir/Containerfile ]; then
+        podman build --secret=id=creds,env=CREDS --iidfile {{host}}.intermediate.id -f Containerfile "$base_flag" "$host_dir"
+        read -r intermediate_img < {{host}}.intermediate.id
+        podman build -t localhost/bootc-arch-host:{{host}} --build-arg BASE=$intermediate_img "$host_dir"
+    else
+        podman build --secret=id=creds,env=CREDS -t localhost/bootc-arch-host:{{host}} -f Containerfile "$base_flag" "$host_dir"
+    fi

@@ -1,3 +1,4 @@
 .env
 hosts/
+*.intermediate.id
 creds.gpg
