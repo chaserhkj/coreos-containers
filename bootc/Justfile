@@ -1,0 +1,25 @@
+default:
+    just build-image arch-k0s
+    just build-image arch-common-config
+    just build-image arch-common-home-config
+    just build-variant-image arch-common-config arch-k0s
+    just build-variant-image arch-common-home-config arch-k0s
+
+build-all:
+    just build-base-images
+    just default
+
+build-base-images:
+    just build-image arch-base
+    just build-live-images arch
+
+build-live-images distro:
+    podman build {{distro}}-live --target builder -t bootc-{{distro}}-live-builder
+    podman build {{distro}}-live -t bootc-{{distro}}-live
+
+build-image subdir:
+    podman build {{subdir}} -t bootc-{{subdir}}
+
+build-variant-image subdir base:
+    postfix=$(echo "{{base}}" | sed "s/.*-//g") && \
+    podman build {{subdir}} -t bootc-{{subdir}}-$postfix --from bootc-{{base}}
