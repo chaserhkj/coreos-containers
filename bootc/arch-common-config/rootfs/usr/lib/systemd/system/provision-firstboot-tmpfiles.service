@@ -1,10 +1,12 @@
 [Unit]
 Description=Provision filesystem at first boot
-ConditionFirstBoot=yes
+ConditionPathExists=!/var/lib/provisions/firstboot-tmpfiles
 After=local-fs.target
 Before=sysinit.target
 
 [Service]
+StateDirectory=provisions
 Type=oneshot
 ExecStart=/usr/bin/systemd-tmpfiles --create /usr/share/provision.firstboot.tmpfiles.d.conf
+ExecStart=/usr/bin/touch ${STATE_DIRECTORY}/firstboot-tmpfiles
 RemainAfterExit=yes
