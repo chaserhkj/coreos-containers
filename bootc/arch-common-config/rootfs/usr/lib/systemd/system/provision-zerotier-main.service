@@ -1,0 +1,7 @@
+[Unit]
+Description=Provision zerotier to join the main VPN
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/zerotier-cli join 8632645b13ab4914
+RemainAfterExit=yes

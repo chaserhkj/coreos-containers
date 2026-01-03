@@ -1,0 +1,5 @@
+# From ../arch-base
+# Image that contains common configurations that are shared between hosts
+FROM bootc-arch-base
+
+COPY rootfs /

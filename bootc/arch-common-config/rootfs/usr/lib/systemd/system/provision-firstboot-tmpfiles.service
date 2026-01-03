@@ -1,0 +1,10 @@
+[Unit]
+Description=Provision filesystem at first boot
+ConditionFirstBoot=yes
+After=local-fs.target
+Before=sysinit.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/systemd-tmpfiles --create /usr/share/provision.firstboot.tmpfiles.d.conf
+RemainAfterExit=yes

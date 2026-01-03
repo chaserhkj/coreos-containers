@@ -1,0 +1,16 @@
+[Unit]
+Description=Provision zerotier to join the main VPN
+ConditionPathExists=!/var/lib/zerotier-one/networks.d/8632645b13ab4914.conf
+Requires=zerotier-one.service
+After=zerotier-one.service
+
+# Ordering dependency on paths.target creates loop
+DefaultDependencies=no
+# Other default dependencies that is actually desired
+Conflicts=shutdown.target
+Before=shutdown.target
+Requires=sysinit.target
+After=sysinit.target
+
+[Path]
+PathExists=/var/lib/zerotier-one/zerotier-one.port

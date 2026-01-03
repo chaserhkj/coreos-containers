@@ -1,0 +1,10 @@
+[Unit]
+Description=Bind mount for persistent nix store
+Requires=var.mount
+After=var.mount
+
+[Mount]
+What=/var/nix
+Where=/nix
+Options=bind
+Type=none

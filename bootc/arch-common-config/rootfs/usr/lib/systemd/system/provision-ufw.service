@@ -1,0 +1,13 @@
+[Unit]
+Description=Provision UFW firewall with default rules
+ConditionPathExists=!/var/lib/provisions/ufw
+Requires=ufw.service
+After=ufw.service
+
+[Service]
+StateDirectory=provisions
+Type=oneshot
+ExecStart=/usr/bin/ufw allow ZeroTier
+ExecStart=/usr/bin/ufw allow in on zt3uq46eqh from 192.168.233.0/25
+ExecStart=/usr/bin/ufw enable
+ExecStart=/usr/bin/touch ${STATE_DIRECTORY}/ufw

@@ -1,0 +1,4 @@
+[ZeroTier]
+title=ZeroTier
+description=ZeroTier services
+ports=9993
