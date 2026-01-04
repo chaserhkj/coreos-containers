@@ -1,3 +1,5 @@
+build_flags := ""
+
 default:
     just build-image arch-k0s
     just build-image arch-common-config
@@ -14,12 +16,18 @@ build-base-images:
     just build-live-images arch
 
 build-live-images distro:
-    podman build {{distro}}-live --target builder -t bootc-{{distro}}-live-builder
-    podman build {{distro}}-live -t bootc-{{distro}}-live
+    podman build {{distro}}-live --target builder -t bootc-{{distro}}-live-builder {{build_flags}}
+    podman build {{distro}}-live -t bootc-{{distro}}-live {{build_flags}}
 
 build-image subdir:
-    podman build {{subdir}} -t bootc-{{subdir}}
+    podman build {{subdir}} -t bootc-{{subdir}} {{build_flags}}
 
 build-variant-image subdir base:
-    postfix=$(echo "{{base}}" | sed "s/.*-//g") && \
-    podman build {{subdir}} -t bootc-{{subdir}}-$postfix --from bootc-{{base}}
+    #!/usr/bin/env bash
+    set -e
+    postfix=$(echo "{{base}}" | sed "s/.*-//g")
+    # Resolve base image
+    orig_base_image=$(grep "^FROM" {{subdir}}/Containerfile|tail -n1|choose 1)
+    [[ $orig_base_image == *-base ]] && base_image=bootc-{{base}} || base_image=$orig_base_image-$postfix
+    echo "Use base $base_image for bootc-{{subdir}}-$postfix"
+    podman build {{subdir}} -t bootc-{{subdir}}-$postfix --from $base_image {{build_flags}}
