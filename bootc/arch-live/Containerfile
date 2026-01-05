@@ -13,6 +13,18 @@ WORKDIR /work
 RUN for mod in /work/modules.d/* ; do ln -s $mod /usr/lib/dracut/modules.d; done;
 RUN /bin/sh for-container.sh build-initrd-all-mods
 
+# Build forked cfsctl
+FROM docker.io/archlinux/archlinux as cfsctl
+
+RUN pacman -Sy --noconfirm rust git make
+
+RUN git clone https://github.com/chaserhkj/composefs-rs /work
+
+WORKDIR /work
+
+RUN cargo build --release -p cfsctl && cp target/release/cfsctl /cfsctl
+
+
 FROM ${BOOTC_BASE}
 
 RUN --mount=type=bind,from=initramfs-build,target=/tmp \
@@ -29,6 +41,9 @@ RUN pacman -Sy --needed --noconfirm iwd && pacman -Scc --noconfirm
 
 # Tools associated with installation tasks
 RUN pacman -Sy --needed --noconfirm efibootmgr gptfdisk parted ddrescue && pacman -Scc --noconfirm
+
+# Install cfsctl
+COPY --from=cfsctl /cfsctl /usr/bin
 
 # Layering other live-system-specific configurations
 COPY rootfs /
