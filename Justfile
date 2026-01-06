@@ -2,6 +2,6 @@ mod bootc 'bootc/'
 
 build_args := ""
 
-default context:
+build context:
     tag=$(basename {{context}}) && \
-    podman build {{context}} {{build_args}}
+    podman build {{context}} -t $tag {{build_args}}
