@@ -27,6 +27,7 @@ RUN --mount=type=cache,target=/root/.cache/uv,id=uv \
 # flash attention
 RUN --mount=type=cache,target=/root/.cache/uv,id=uv \
     if [ ${INSTALL_ATTNS} = "true" ]; then \
+    uv pip install wheel; \
     uv pip install flash-attn --no-build-isolation; fi
 
 # sage attention
