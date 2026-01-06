@@ -8,7 +8,6 @@ COPY torch.txt /torch.txt
 
 FROM ghcr.io/astral-sh/uv:python3.13-trixie
 ARG TORCH_BACKEND=nightly/rocm7.1
-ARG INSTALL_ATTNS=false
 
 RUN uv venv /venv
 
@@ -22,18 +21,6 @@ RUN --mount=type=cache,target=/root/.cache/uv,id=uv \
         --excludes /mnt/dep-files/torch.txt && \
     uv pip install -r /mnt/dep-files/comfyui-manager-deps.txt \
         --excludes /mnt/dep-files/torch.txt
-
-# Install dependencies for various accelerated algorithms
-# flash attention
-RUN --mount=type=cache,target=/root/.cache/uv,id=uv \
-    if [ ${INSTALL_ATTNS} = "true" ]; then \
-    uv pip install wheel; \
-    uv pip install flash-attn --no-build-isolation; fi
-
-# sage attention
-RUN --mount=type=cache,target=/root/.cache/uv,id=uv \
-    if [ ${INSTALL_ATTNS} = "true" ]; then \
-    uv pip install sageattention==2.2.0 --no-build-isolation; fi
 
 # For ComfyUI-Manager to manage custom nodes dependencies
 RUN --mount=type=cache,target=/root/.cache/uv,id=uv \
