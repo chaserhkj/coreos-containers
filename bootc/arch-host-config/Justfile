@@ -1,6 +1,6 @@
 set dotenv-load := true
 podman := require("podman")
-image_ref := env("IMAGE_REF", "docker.io/chaserhkj/arch-bootc-host")
+image_ref := env("ARCH_BOOTC_HOST_IMAGE_REF", "docker.io/chaserhkj/arch-bootc-host")
 
 prepare-image host: (configure-image host)
     podman tag localhost/bootc-arch-host:{{host}} {{image_ref}}:{{host}}
