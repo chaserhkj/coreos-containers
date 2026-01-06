@@ -30,7 +30,8 @@ FROM ${BOOTC_BASE}
 RUN --mount=type=bind,from=initramfs-build,target=/tmp \
     cp -f /tmp/work/initrd-all-mods.img /usr/lib/modules/*/initramfs.img
 
-RUN pacman -Sy --needed --noconfirm sudo vim bash-completion less && pacman -Scc --noconfirm
+# Common tools, including tools that might be needed to work with bootc
+RUN pacman -Sy --needed --noconfirm sudo vim bash-completion less jq fsverity-utils && pacman -Scc --noconfirm
 
 # Create a user "liveuser" without password, and configure sudo for it
 RUN useradd -m liveuser && passwd -d liveuser && \
