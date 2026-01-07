@@ -18,16 +18,21 @@ fi
 
 shift 2 # "_unshared _mounted"
 
-if [[ "$1" == exec ]] ; then
-    shift
-    export PATH=$ROOT_PROFILE/bin:$PATH
-    [[ -n "$@" ]] && exec "$@"
+export PATH=$ROOT_PROFILE/bin:$PATH
+
+if [[ -z "$1" ]]; then
     exec $SHELL
 fi
 
-if [[ -f $ROOT_PROFILE/bin/nix ]]; then
-    NIX=$ROOT_PROFILE/bin/nix
-else
+if [[ "$1" == exec ]] ; then
+    shift
+    [ -z "$1" ] || exec $SHELL
+    exec "$@"
+fi
+
+if command -v nix &> /dev/null; then
+    NIX=nix
+elif command -v nixStatic &> /dev/null; then
     NIX=nixStatic
 fi
 
