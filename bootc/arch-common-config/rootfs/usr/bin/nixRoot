@@ -2,7 +2,8 @@
 [[ "$UID" == "0" ]] || { echo "Must run as root"; exit 1; }
 
 ROOT_STORE=/var/nixRoot/nix
-ROOT_PROFILE=/nix/rootProfile/default
+ROOT_PROFILE_BASE=/nix/rootProfile
+ROOT_PROFILE=$ROOT_PROFILE_BASE/default
 
 if [[ "$1" != "_unshared" ]]; then
     exec unshare -m -- $0 _unshared "$@"
@@ -34,6 +35,7 @@ if [[ "$1" == profile ]]; then
     shift
     op=$1
     shift
+    mkdir -p $ROOT_PROFILE_BASE
     exec $NIX profile $op --profile $ROOT_PROFILE "$@"
 fi
 
