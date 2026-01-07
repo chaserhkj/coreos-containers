@@ -38,10 +38,17 @@ RUN sed -i '/^NoExtract *=.*$/d' /etc/pacman.conf
 
 # Reinstall everything to obtain the thinned files of default packages
 # This effectively updates everything as well so we update keyring alongside
+# After this, filesystem package overrides some bootc symlinks when reinstalling
+# So we want to reinstate them
 RUN pacman-key --init && pacman -Sy && \
     pacman -S archlinux-keyring --noconfirm && \
     pacman -Qq | pacman -S --noconfirm - && \
-    pacman -Scc --noconfirm
+    pacman -Scc --noconfirm && \
+    rm -rf /home /root /usr/local /srv /mnt /opt && \
+    mkdir -p /var/home /var/roothome /var/usrlocal /var/srv /var/opt /var/mnt && \
+    ln -sT var/home /home && ln -sT var/roothome /root && \
+    ln -sT ../var/usrlocal /usr/local && \
+    ln -sT var/srv /srv && ln -sT var/opt /opt && ln -sT var/mnt /mnt 
 
 # locale-gen
 RUN sed -i 's/#en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen && locale-gen
