@@ -28,8 +28,14 @@ build-variant-image subdir base:
     #!/usr/bin/env bash
     set -e
     postfix=$(echo "{{base}}" | sed "s/.*-//g")
+    manifest={{subdir}}/Containerfile
     # Resolve base image
-    orig_base_image=$(grep "^FROM" {{subdir}}/Containerfile|tail -n1|choose 1)
+    base_arg=$(grep "ARG BASE=.*$" $manifest| head -n1)
+    if [[ -n "$base_arg" ]]; then
+        orig_base_image=$(echo $base_arg | sed "s/^ARG BASE=//")
+    else
+        orig_base_image=$(grep "^FROM" $manifest|tail -n1|choose 1)
+    fi
     [[ $orig_base_image == *-base ]] && base_image=bootc-{{base}} || base_image=$orig_base_image-$postfix
     echo "Use base $base_image for bootc-{{subdir}}-$postfix"
-    podman build {{subdir}} -t bootc-{{subdir}}-$postfix --from $base_image {{build_flags}}
+    podman build {{subdir}} -t bootc-{{subdir}}-$postfix --build-arg BASE=$base_image {{build_flags}}
