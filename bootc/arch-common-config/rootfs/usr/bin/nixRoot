@@ -9,6 +9,7 @@ if [[ "$1" != "_unshared" ]]; then
 fi
 
 if [[ "$2" != "_mounted" ]]; then
+    shift # "_unshared"
     mkdir -p $ROOT_STORE
     mount --make-private --make-unbindable --bind $ROOT_STORE /nix
     exec $0 _unshared _mounted "$@"
