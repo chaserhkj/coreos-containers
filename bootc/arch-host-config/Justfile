@@ -2,6 +2,12 @@ set dotenv-load := true
 podman := require("podman")
 image_ref := env("ARCH_BOOTC_HOST_IMAGE_REF", "docker.io/chaserhkj/arch-bootc-host")
 
+default: prepare-all-images
+
+prepare-all-images:
+    just prepare-image hkj-laptop
+    just prepare-image kagumine
+
 prepare-image host: (configure-image host)
     podman tag localhost/bootc-arch-host:{{host}} {{image_ref}}:{{host}}
     podman push {{image_ref}}:{{host}}
