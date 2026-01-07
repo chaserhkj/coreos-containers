@@ -1,0 +1,39 @@
+#!/bin/bash
+[[ "$UID" == "0" ]] || { echo "Must run as root"; exit 1; }
+
+ROOT_STORE=/var/nixRoot/nix
+ROOT_PROFILE=/nix/rootProfile/default
+
+if [[ "$1" != "_unshared" ]]; then
+    exec unshare -m -- $0 _unshared "$@"
+fi
+
+if [[ "$2" != "_mounted" ]]; then
+    mkdir -p $ROOT_STORE
+    mount --make-private --make-unbindable --bind $ROOT_STORE /nix
+    exec $0 _unshared _mounted "$@"
+fi
+
+shift 2 # "_unshared _mounted"
+
+if [[ "$1" == exec ]] ; then
+    shift
+    export PATH=$ROOT_PROFILE/bin:$PATH
+    [[ -n "$@" ]] && exec "$@"
+    exec $SHELL
+fi
+
+if [[ -f $ROOT_PROFILE/bin/nix ]]; then
+    NIX=$ROOT_PROFILE/bin/nix
+else
+    NIX=nixStatic
+fi
+
+if [[ "$1" == profile ]]; then
+    shift
+    op=$1
+    shift
+    exec $NIX profile $op --profile $ROOT_PROFILE "$@"
+fi
+
+exec $NIX "$@"
