@@ -8,7 +8,9 @@ RUN aur sync -n --noview podlet
 # Build ssh-key-dir to support $HOME/.ssh/authorized_keys.d
 FROM docker.io/archlinux/archlinux as ssh-key-dir
 
-RUN pacman -Sy --noconfirm rust git make
+RUN --mount=type=cache,target=/var/lib/pacman/sync,id=pacman-sync \
+    --mount=type=cache,target=/var/cache/pacman/pkg,id=pacman-cache \
+    pacman -Sy --noconfirm rust git make
 
 RUN git clone https://github.com/coreos/ssh-key-dir /work
 
@@ -19,7 +21,9 @@ RUN mkdir -p /target && make RELEASE=1 && make install DESTDIR=/target RELEASE=1
 # Build forked cfsctl
 FROM docker.io/archlinux/archlinux as cfsctl
 
-RUN pacman -Sy --noconfirm rust git make
+RUN --mount=type=cache,target=/var/lib/pacman/sync,id=pacman-sync \
+    --mount=type=cache,target=/var/cache/pacman/pkg,id=pacman-cache \
+    pacman -Sy --noconfirm rust git make
 
 RUN git clone https://github.com/chaserhkj/composefs-rs /work
 
@@ -40,10 +44,11 @@ RUN sed -i '/^NoExtract *=.*$/d' /etc/pacman.conf
 # This effectively updates everything as well so we update keyring alongside
 # After this, filesystem package overrides some bootc symlinks when reinstalling
 # So we want to reinstate them
-RUN pacman-key --init && pacman -Sy && \
+RUN --mount=type=cache,target=/usr/lib/sysimage/lib/pacman/sync,id=pacman-sync \
+    --mount=type=cache,target=/usr/lib/sysimage/cache/pacman/pkg,id=pacman-cache \
+    pacman-key --init && pacman -Sy && \
     pacman -S archlinux-keyring --noconfirm && \
     pacman -Qq | pacman -S --noconfirm - && \
-    pacman -Scc --noconfirm && \
     rm -rf /home /root /usr/local /srv /mnt /opt && \
     mkdir -p /var/home /var/roothome /var/usrlocal /var/srv /var/opt /var/mnt && \
     ln -sT var/home /home && ln -sT var/roothome /root && \
@@ -58,16 +63,21 @@ RUN cp -f /etc/pacman.conf /etc/pacman-local-repo.conf && \
     printf '[sitepkgs]\nSigLevel = Never\nServer = file:///var/local-repo/\n' | tee -a /etc/pacman-local-repo.conf
 
 # Common tools, including tools that might be needed to work with bootc
-RUN pacman -Sy --needed --noconfirm sudo vim bash-completion man less jq fsverity-utils && pacman -Scc --noconfirm
+RUN --mount=type=cache,target=/usr/lib/sysimage/lib/pacman/sync,id=pacman-sync \
+    --mount=type=cache,target=/usr/lib/sysimage/cache/pacman/pkg,id=pacman-cache \
+    pacman -Sy --needed --noconfirm sudo vim bash-completion man less jq fsverity-utils
 
 # Container tools
 RUN --mount=type=bind,from=aur-builder,source=/var/build/repo,target=/var/local-repo \
+    --mount=type=cache,target=/usr/lib/sysimage/lib/pacman/sync,id=pacman-sync \
+    --mount=type=cache,target=/usr/lib/sysimage/cache/pacman/pkg,id=pacman-cache \
     pacman -Sy --needed --noconfirm podman buildah skopeo umoci docker-compose podman-docker distrobox && \
-    pacman -Sy --config /etc/pacman-local-repo.conf --needed --noconfirm podlet && \
-    pacman -Scc --noconfirm
+    pacman -Sy --config /etc/pacman-local-repo.conf --needed --noconfirm podlet
 
 # Base firewall and networking setup
-RUN pacman -Sy --needed --noconfirm ufw openssh zerotier-one wireguard-tools && pacman -Scc --noconfirm
+RUN --mount=type=cache,target=/usr/lib/sysimage/lib/pacman/sync,id=pacman-sync \
+    --mount=type=cache,target=/usr/lib/sysimage/cache/pacman/pkg,id=pacman-cache \
+    pacman -Sy --needed --noconfirm ufw openssh zerotier-one wireguard-tools
 
 # Install ssh-key-dir
 COPY --from=ssh-key-dir /target /

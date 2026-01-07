@@ -10,33 +10,18 @@ RUN sed -i 's/^NoExtract *=.*$//g' /etc/pacman.conf
 
 # Reinstall everything to obtain the thinned files of default packages
 # This effectively updates everything as well so we update keyring alongside
-RUN pacman-key --init && pacman -Sy && \
+RUN --mount=type=cache,target=/var/lib/pacman/sync,id=pacman-sync \
+    --mount=type=cache,target=/var/cache/pacman/pkg,id=pacman-cache \
+    pacman-key --init && pacman -Sy && \
     pacman -S archlinux-keyring archlinuxcn-keyring --noconfirm && \
-    pacman -Qq | pacman -S --noconfirm - && \
-    pacman -Scc --noconfirm
+    pacman -Qq | pacman -S --noconfirm -
 
-RUN pacman -S --needed --noconfirm yay base-devel && \
-    pacman -Scc --noconfirm
+RUN --mount=type=cache,target=/var/lib/pacman/sync,id=pacman-sync \
+    --mount=type=cache,target=/var/cache/pacman/pkg,id=pacman-cache \
+    pacman -S --needed --noconfirm yay base-devel
 
-# For automatically building aur packages using aurutils
-FROM yay-base as aur-builder
-
-RUN useradd -m -d /var/build -g wheel builder && \
-    chmod 755 /var/build && \
-    echo "%wheel ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
-
-USER builder
-
-RUN yay -S --noconfirm --removemake aurutils &&  yay -Scc --noconfirm
-
-RUN sudo pacman -S vim --noconfirm
-
-RUN printf '[sitepkgs]\nSigLevel = Never\nServer = file:///var/build/repo/\n' | sudo tee -a /etc/pacman.conf && \
-    mkdir /var/build/repo && repo-add /var/build/repo/sitepkgs.db.tar.gz && sudo pacman -Sy --noconfirm
-
-WORKDIR /var/build
-
-# Add all needed AUR packages here
+# From ../../base/arch-aur-builder
+FROM arch-aur-builder as aur-builder
 
 RUN aur sync -n --noview bindfs
 
@@ -46,20 +31,23 @@ RUN cp -f /etc/pacman.conf /etc/pacman-local-repo.conf && \
     printf '[sitepkgs]\nSigLevel = Never\nServer = file:///var/local-repo/\n' | sudo tee -a /etc/pacman-local-repo.conf
 
 # Install AUR packages built previously
-RUN --mount=type=bind,from=aur-builder,source=/var/build/repo,target=/var/local-repo \
-    pacman -Sy --config /etc/pacman-local-repo.conf --needed --noconfirm bindfs && \
-    pacman -Scc --noconfirm
+RUN --mount=type=cache,target=/var/lib/pacman/sync,id=pacman-sync \
+    --mount=type=cache,target=/var/cache/pacman/pkg,id=pacman-cache \
+    --mount=type=bind,from=aur-builder,source=/var/build/repo,target=/var/local-repo \
+    pacman -Sy --config /etc/pacman-local-repo.conf --needed --noconfirm bindfs
 
 # Pre-install packages installed by distrobox-init, to speed up init process in distrobox
-RUN pacman -S --needed --noconfirm zsh bash-completion bc curl diffutils findutils glibc gnupg \
+RUN --mount=type=cache,target=/var/lib/pacman/sync,id=pacman-sync \
+    --mount=type=cache,target=/var/cache/pacman/pkg,id=pacman-cache \
+    pacman -S --needed --noconfirm zsh bash-completion bc curl diffutils findutils glibc gnupg \
     iputils inetutils keyutils less lsof man-db man-pages mlocate mtr ncurses nss-mdns openssh \
     pigz pinentry procps-ng rsync shadow sudo tcpdump time traceroute tree tzdata unzip \
-    util-linux util-linux-libs vte-common wget words xorg-xauth zip mesa vulkan-intel vulkan-radeon && \
-    pacman -Scc --noconfirm
+    util-linux util-linux-libs vte-common wget words xorg-xauth zip mesa vulkan-intel vulkan-radeon
 
 # Customized packages
-RUN pacman -S --needed --noconfirm bubblewrap && \
-    pacman -Scc --noconfirm
+RUN --mount=type=cache,target=/var/lib/pacman/sync,id=pacman-sync \
+    --mount=type=cache,target=/var/cache/pacman/pkg,id=pacman-cache \
+    pacman -S --needed --noconfirm bubblewrap
 
 # locale-gen
 RUN sed -i 's/#en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen && locale-gen

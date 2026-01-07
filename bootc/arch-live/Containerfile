@@ -3,7 +3,9 @@ ARG BOOTC_BASE=ghcr.io/bootcrew/arch-bootc:latest
 # From ../arch-base
 FROM bootc-arch-base as builder
 
-RUN pacman -Sy git kexec-tools --needed --noconfirm && pacman -Scc --noconfirm
+RUN --mount=type=cache,target=/usr/lib/sysimage/lib/pacman/sync,id=pacman-sync \
+    --mount=type=cache,target=/usr/lib/sysimage/cache/pacman/pkg,id=pacman-cache \
+    pacman -Sy git kexec-tools --needed --noconfirm
 
 FROM builder as initramfs-build
 
@@ -16,7 +18,9 @@ RUN /bin/sh for-container.sh build-initrd-all-mods
 # Build forked cfsctl
 FROM docker.io/archlinux/archlinux as cfsctl
 
-RUN pacman -Sy --noconfirm rust git make
+RUN --mount=type=cache,target=/var/lib/pacman/sync,id=pacman-sync \
+    --mount=type=cache,target=/var/cache/pacman/pkg,id=pacman-cache \
+    pacman -Sy --noconfirm rust git make
 
 RUN git clone https://github.com/chaserhkj/composefs-rs /work
 
@@ -31,17 +35,23 @@ RUN --mount=type=bind,from=initramfs-build,target=/tmp \
     cp -f /tmp/work/initrd-all-mods.img /usr/lib/modules/*/initramfs.img
 
 # Common tools, including tools that might be needed to work with bootc
-RUN pacman -Sy --needed --noconfirm sudo vim bash-completion less jq fsverity-utils && pacman -Scc --noconfirm
+RUN --mount=type=cache,target=/usr/lib/sysimage/lib/pacman/sync,id=pacman-sync \
+    --mount=type=cache,target=/usr/lib/sysimage/cache/pacman/pkg,id=pacman-cache \
+    pacman -Sy --needed --noconfirm sudo vim bash-completion less jq fsverity-utils
 
 # Create a user "liveuser" without password, and configure sudo for it
 RUN useradd -m liveuser && passwd -d liveuser && \
     echo 'liveuser ALL=(ALL) NOPASSWD: ALL' > /etc/sudoers.d/99_liveuser
 
 # Wireless connection manager
-RUN pacman -Sy --needed --noconfirm iwd && pacman -Scc --noconfirm
+RUN --mount=type=cache,target=/usr/lib/sysimage/lib/pacman/sync,id=pacman-sync \
+    --mount=type=cache,target=/usr/lib/sysimage/cache/pacman/pkg,id=pacman-cache \
+    pacman -Sy --needed --noconfirm iwd
 
 # Tools associated with installation tasks
-RUN pacman -Sy --needed --noconfirm efibootmgr gptfdisk parted ddrescue && pacman -Scc --noconfirm
+RUN --mount=type=cache,target=/usr/lib/sysimage/lib/pacman/sync,id=pacman-sync \
+    --mount=type=cache,target=/usr/lib/sysimage/cache/pacman/pkg,id=pacman-cache \
+    pacman -Sy --needed --noconfirm efibootmgr gptfdisk parted ddrescue
 
 # Install cfsctl
 COPY --from=cfsctl /cfsctl /usr/bin
