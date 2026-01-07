@@ -26,7 +26,7 @@ fi
 
 if [[ "$1" == exec ]] ; then
     shift
-    [ -z "$1" ] || exec $SHELL
+    [ -z "$1" ] && exec $SHELL
     exec "$@"
 fi
 
