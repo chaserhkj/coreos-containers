@@ -9,7 +9,8 @@ prepare-all-images:
 
 prepare-image host: (configure-image host)
     podman tag localhost/bootc-arch-host:{{host}} {{image_ref}}:{{host}}
-    podman push {{image_ref}}:{{host}}
+    [ -f hosts/{{host}}/LIVE ] && push_flags="--compression-format=gzip --force-compression" || push_flags=  ; \
+    podman push $push_flags {{image_ref}}:{{host}}
 
 configure-image host:
     #!/usr/bin/env bash
@@ -17,10 +18,23 @@ configure-image host:
     [ -f $host_dir/BASE ] && read -r base_img < "$host_dir/BASE"
     [ -n $base_img ] && base_flag="--from=$base_img"
     export CREDS="$(gpg --decrypt creds.gpg)" || exit 1
+
+    podman build --secret=id=creds,env=CREDS --iidfile {{host}}.intermediate.id -f Containerfile "$base_flag" "$host_dir"
+
     if [ -f $host_dir/Containerfile ]; then
-        podman build --secret=id=creds,env=CREDS --iidfile {{host}}.intermediate.id -f Containerfile "$base_flag" "$host_dir"
         read -r intermediate_img < {{host}}.intermediate.id
-        podman build -t localhost/bootc-arch-host:{{host}} --build-arg BASE=$intermediate_img "$host_dir"
+        podman build --iidfile {{host}}.pre-live.id --build-arg BASE=$intermediate_img "$host_dir"
     else
-        podman build --secret=id=creds,env=CREDS -t localhost/bootc-arch-host:{{host}} -f Containerfile "$base_flag" "$host_dir"
+        cp {{host}}.intermediate.id {{host}}.pre-live.id
     fi
+
+    read -r pre_live_image < {{host}}.pre-live.id
+    if [ -f $host_dir/LIVE ]; then
+        podman build --iidfile {{host}}.final.id -f Containerfile.live --build-arg BASE=$pre_live_image "$host_dir"
+        read -r final_image < {{host}}.final.id
+    else
+        final_image=$pre_live_image
+    fi
+
+    podman tag $final_image localhost/bootc-arch-host:{{host}}
+

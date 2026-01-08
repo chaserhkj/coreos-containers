@@ -1,0 +1,15 @@
+ARG BASE
+
+# From ../../../arch-live
+FROM bootc-arch-live-builder as initramfs-build
+
+RUN git clone https://github.com/chaserhkj/bootc-live /work
+WORKDIR /work
+
+RUN for mod in /work/modules.d/* ; do ln -s $mod /usr/lib/dracut/modules.d; done;
+RUN /bin/sh for-container.sh build-initrd-all-mods
+
+FROM ${BASE}
+
+RUN --mount=type=bind,from=initramfs-build,target=/tmp \
+    cp -f /tmp/work/initrd-all-mods.img /usr/lib/modules/*/initramfs.img
