@@ -5,8 +5,7 @@ image_ref := env("ARCH_BOOTC_HOST_IMAGE_REF", "docker.io/chaserhkj/arch-bootc-ho
 default: prepare-all-images
 
 prepare-all-images:
-    just prepare-image hkj-laptop
-    just prepare-image kagumine
+    for host in $(ls hosts); do just prepare-image $host; done;
 
 prepare-image host: (configure-image host)
     podman tag localhost/bootc-arch-host:{{host}} {{image_ref}}:{{host}}
