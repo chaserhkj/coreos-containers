@@ -31,6 +31,10 @@ WORKDIR /work
 
 RUN cargo build --release -p cfsctl && cp target/release/cfsctl /cfsctl
 
+FROM scratch as bashrc.d
+
+COPY bashrc.d.sh /
+
 # Base arch image with extended package setups, to be used as base for site-specific images
 FROM ${BOOTC_BASE}
 
@@ -78,6 +82,11 @@ RUN --mount=type=bind,from=aur-builder,source=/var/build/repo,target=/var/local-
 RUN --mount=type=cache,target=/usr/lib/sysimage/lib/pacman/sync,id=pacman-sync \
     --mount=type=cache,target=/usr/lib/sysimage/cache/pacman/pkg,id=pacman-cache \
     pacman -Sy --needed --noconfirm ufw openssh zerotier-one wireguard-tools
+
+# Install bashrc.d setup
+RUN --mount=type=bind,from=bashrc.d,target=/tmp \
+    cat /tmp/bashrc.d.sh >> /etc/bash.bashrc && \
+    mkdir -p /etc/bashrc.d
 
 # Install ssh-key-dir
 COPY --from=ssh-key-dir /target /

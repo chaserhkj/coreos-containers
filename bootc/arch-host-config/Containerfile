@@ -12,8 +12,7 @@ RUN --mount=type=bind,target=/tmp \
 COPY rootfs /
 
 RUN --mount=type=secret,id=creds \
-    MAIN_USER=$(cut -d: -f1 < /run/secrets/creds ) && \
-    useradd -M -G wheel ${MAIN_USER} && chpasswd < /run/secrets/creds
+    chpasswd < /run/secrets/creds
 
 # Run setup script from build context, if any
 RUN --mount=type=bind,target=/tmp \

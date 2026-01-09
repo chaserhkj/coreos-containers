@@ -13,7 +13,9 @@ USER builder
 
 WORKDIR /var/build
 
-RUN git clone https://aur.archlinux.org/aurutils.git && cd aurutils && \
+RUN --mount=type=cache,target=/var/lib/pacman/sync,id=pacman-sync \
+    --mount=type=cache,target=/var/cache/pacman/pkg,id=pacman-cache \
+    git clone https://aur.archlinux.org/aurutils.git && cd aurutils && \
     makepkg -si --noconfirm
 
 RUN printf '[sitepkgs]\nSigLevel = Never\nServer = file:///var/build/repo/\n' | sudo tee -a /etc/pacman.conf && \

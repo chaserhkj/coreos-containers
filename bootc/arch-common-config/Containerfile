@@ -9,9 +9,30 @@ RUN nix build nixpkgs#nixStatic
 
 RUN cp /result/bin/nix /nixStatic
 
+FROM arch-aur-builder as aur-builder
+
+RUN aur sync -n --noview sesh-bin
+
+FROM scratch
+
+ADD https://github.com/akinomyoga/ble.sh/releases/download/nightly/ble-nightly.tar.xz /
+
 FROM ${BASE}
 
 RUN --mount=type=bind,from=nix-static,target=/var/mnt \
     install -m0755 /var/mnt/nixStatic /usr/bin
+
+RUN useradd -M -G wheel hkj
+
+# Install BLE (Bash Line Editor) framework, and patch off C-r shortcuts
+RUN --mount=type=bind,from=blesh,target=/tmp \
+    bash /tmp/ble-nightly/ble.sh --install /usr/share && \
+    sed "/ble-bind .* C-r.*/d" /usr/share/blesh/contrib/fzf-key-bindings.bash > /usr/share/blesh/fzf-key-bindings.bash
+
+# Install CLI power tools
+RUN --mount=type=bind,from=aur-builder,source=/var/build/repo,target=/var/local-repo \
+    --mount=type=cache,target=/usr/lib/sysimage/lib/pacman/sync,id=pacman-sync \
+    --mount=type=cache,target=/usr/lib/sysimage/cache/pacman/pkg,id=pacman-cache \
+    pacman -Sy --config /etc/pacman-local-repo.conf --needed --noconfirm tmux zoxide sesh-bin atuin fzf
 
 COPY rootfs /
