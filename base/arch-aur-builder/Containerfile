@@ -3,7 +3,7 @@ FROM docker.io/archlinux/archlinux
 
 RUN --mount=type=cache,target=/var/lib/pacman/sync,id=pacman-sync \
     --mount=type=cache,target=/var/cache/pacman/pkg,id=pacman-cache \
-    pacman -Syy --needed --noconfirm git base-devel
+    pacman -Sy --needed --noconfirm git base-devel
 
 RUN useradd -m -d /var/build -g wheel builder && \
     chmod 755 /var/build && \
@@ -19,7 +19,7 @@ RUN --mount=type=cache,target=/var/lib/pacman/sync,id=pacman-sync \
     makepkg -si --noconfirm
 
 RUN printf '[sitepkgs]\nSigLevel = Never\nServer = file:///var/build/repo/\n' | sudo tee -a /etc/pacman.conf && \
-    mkdir /var/build/repo && repo-add /var/build/repo/sitepkgs.db.tar.gz && sudo pacman -Syy --noconfirm
+    mkdir /var/build/repo && repo-add /var/build/repo/sitepkgs.db.tar.gz && sudo pacman -Sy --noconfirm
 
 # To use builder, build needed AUR packages by
 # RUN aur sync -n --noview <pkgs>
@@ -27,5 +27,7 @@ RUN printf '[sitepkgs]\nSigLevel = Never\nServer = file:///var/build/repo/\n' | 
 # To install built image to another archlinux image
 # RUN cp -f /etc/pacman.conf /etc/pacman-local-repo.conf && \ 
 #    printf '[sitepkgs]\nSigLevel = Never\nServer = file:///var/local-repo/\n' | sudo tee -a /etc/pacman-local-repo.conf
-# RUN --mount=type=bind,from=arch-aur-builder,source=/var/build/repo,target=/var/local-repo \
-#   pacman -Syy --config /etc/pacman-local-repo.conf --needed --noconfirm <pkgs> && pacman -Scc --noconfirm
+# RUN --mount=type=bind,from=aur-builder,source=/var/build/repo,target=/var/local-repo \
+#     --mount=type=tmpfs,target=/usr/lib/sysimage/lib/pacman/sync \
+#     --mount=type=tmpfs,target=/usr/lib/sysimage/cache/pacman/pkg \
+#     pacman -Sy --config /etc/pacman-local-repo.conf --needed --noconfirm <pkg>

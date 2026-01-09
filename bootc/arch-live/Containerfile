@@ -5,7 +5,7 @@ FROM bootc-arch-base as builder
 
 RUN --mount=type=cache,target=/usr/lib/sysimage/lib/pacman/sync,id=pacman-sync \
     --mount=type=cache,target=/usr/lib/sysimage/cache/pacman/pkg,id=pacman-cache \
-    pacman -Syy git kexec-tools --needed --noconfirm
+    pacman -Sy git kexec-tools --needed --noconfirm
 
 FROM builder as initramfs-build
 
@@ -20,7 +20,7 @@ FROM docker.io/archlinux/archlinux as cfsctl
 
 RUN --mount=type=cache,target=/var/lib/pacman/sync,id=pacman-sync \
     --mount=type=cache,target=/var/cache/pacman/pkg,id=pacman-cache \
-    pacman -Syy --noconfirm rust git make
+    pacman -Sy --noconfirm rust git make
 
 RUN git clone https://github.com/chaserhkj/composefs-rs /work
 
@@ -37,7 +37,7 @@ RUN --mount=type=bind,from=initramfs-build,target=/tmp \
 # Common tools, including tools that might be needed to work with bootc
 RUN --mount=type=cache,target=/usr/lib/sysimage/lib/pacman/sync,id=pacman-sync \
     --mount=type=cache,target=/usr/lib/sysimage/cache/pacman/pkg,id=pacman-cache \
-    pacman -Syy --needed --noconfirm sudo vim bash-completion less jq fsverity-utils
+    pacman -Sy --needed --noconfirm sudo vim bash-completion less jq fsverity-utils
 
 # Create a user "liveuser" without password, and configure sudo for it
 RUN useradd -m liveuser && passwd -d liveuser && \
@@ -46,12 +46,12 @@ RUN useradd -m liveuser && passwd -d liveuser && \
 # Wireless connection manager
 RUN --mount=type=cache,target=/usr/lib/sysimage/lib/pacman/sync,id=pacman-sync \
     --mount=type=cache,target=/usr/lib/sysimage/cache/pacman/pkg,id=pacman-cache \
-    pacman -Syy --needed --noconfirm iwd
+    pacman -Sy --needed --noconfirm iwd
 
 # Tools associated with installation tasks
 RUN --mount=type=cache,target=/usr/lib/sysimage/lib/pacman/sync,id=pacman-sync \
     --mount=type=cache,target=/usr/lib/sysimage/cache/pacman/pkg,id=pacman-cache \
-    pacman -Syy --needed --noconfirm efibootmgr gptfdisk parted ddrescue
+    pacman -Sy --needed --noconfirm efibootmgr gptfdisk parted ddrescue
 
 # Install cfsctl
 COPY --from=cfsctl /cfsctl /usr/bin

@@ -32,9 +32,13 @@ RUN --mount=type=bind,from=blesh,target=/tmp \
     sed "/ble-bind .* C-r.*/d" /usr/share/blesh/contrib/fzf-key-bindings.bash > /usr/share/blesh/fzf-key-bindings.bash
 
 # Install CLI power tools
-RUN --mount=type=bind,from=aur-builder,source=/var/build/repo,target=/var/local-repo \
-    --mount=type=cache,target=/usr/lib/sysimage/lib/pacman/sync,id=pacman-sync \
+RUN --mount=type=cache,target=/usr/lib/sysimage/lib/pacman/sync,id=pacman-sync \
     --mount=type=cache,target=/usr/lib/sysimage/cache/pacman/pkg,id=pacman-cache \
-    pacman -Syy --config /etc/pacman-local-repo.conf --needed --noconfirm tmux zoxide sesh-bin atuin fzf
+    pacman -Sy --needed --noconfirm tmux zoxide atuin fzf
+
+RUN --mount=type=bind,from=aur-builder,source=/var/build/repo,target=/var/local-repo \
+    --mount=type=tmpfs,target=/usr/lib/sysimage/lib/pacman/sync \
+    --mount=type=tmpfs,target=/usr/lib/sysimage/cache/pacman/pkg \
+    pacman -Sy --config /etc/pacman-local-repo.conf --needed --noconfirm sesh-bin
 
 COPY rootfs /
