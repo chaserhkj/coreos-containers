@@ -13,9 +13,11 @@ FROM arch-aur-builder as aur-builder
 
 RUN aur sync -n --noview sesh-bin
 
-FROM scratch
+FROM docker.io/archlinux/archlinux as blesh
 
 ADD https://github.com/akinomyoga/ble.sh/releases/download/nightly/ble-nightly.tar.xz /
+
+RUN tar -C / -xvf /ble-nightly.tar.xz
 
 FROM ${BASE}
 
