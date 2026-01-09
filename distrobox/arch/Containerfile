@@ -12,7 +12,7 @@ RUN sed -i 's/^NoExtract *=.*$//g' /etc/pacman.conf
 # This effectively updates everything as well so we update keyring alongside
 RUN --mount=type=cache,target=/var/lib/pacman/sync,id=pacman-sync \
     --mount=type=cache,target=/var/cache/pacman/pkg,id=pacman-cache \
-    pacman-key --init && pacman -Sy && \
+    pacman-key --init && pacman -Syy && \
     pacman -S archlinux-keyring archlinuxcn-keyring --noconfirm && \
     pacman -Qq | pacman -S --noconfirm -
 
@@ -34,7 +34,7 @@ RUN cp -f /etc/pacman.conf /etc/pacman-local-repo.conf && \
 RUN --mount=type=cache,target=/var/lib/pacman/sync,id=pacman-sync \
     --mount=type=cache,target=/var/cache/pacman/pkg,id=pacman-cache \
     --mount=type=bind,from=aur-builder,source=/var/build/repo,target=/var/local-repo \
-    pacman -Sy --config /etc/pacman-local-repo.conf --needed --noconfirm bindfs
+    pacman -Syy --config /etc/pacman-local-repo.conf --needed --noconfirm bindfs
 
 # Pre-install packages installed by distrobox-init, to speed up init process in distrobox
 RUN --mount=type=cache,target=/var/lib/pacman/sync,id=pacman-sync \

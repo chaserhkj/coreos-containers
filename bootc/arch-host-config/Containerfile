@@ -6,7 +6,7 @@ FROM bootc-arch-base
 RUN --mount=type=bind,target=/tmp \
     --mount=type=cache,target=/usr/lib/sysimage/lib/pacman/sync,id=pacman-sync \
     --mount=type=cache,target=/usr/lib/sysimage/cache/pacman/pkg,id=pacman-cache \
-    [ -f /tmp/PKGS ] && { pacman -Sy - --noconfirm --needed </tmp/PKGS; } || exit 0
+    [ -f /tmp/PKGS ] && { pacman -Syy - --noconfirm --needed </tmp/PKGS; } || exit 0
 
 # Adding layer
 COPY rootfs /

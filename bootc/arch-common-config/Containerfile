@@ -35,6 +35,6 @@ RUN --mount=type=bind,from=blesh,target=/tmp \
 RUN --mount=type=bind,from=aur-builder,source=/var/build/repo,target=/var/local-repo \
     --mount=type=cache,target=/usr/lib/sysimage/lib/pacman/sync,id=pacman-sync \
     --mount=type=cache,target=/usr/lib/sysimage/cache/pacman/pkg,id=pacman-cache \
-    pacman -Sy --config /etc/pacman-local-repo.conf --needed --noconfirm tmux zoxide sesh-bin atuin fzf
+    pacman -Syy --config /etc/pacman-local-repo.conf --needed --noconfirm tmux zoxide sesh-bin atuin fzf
 
 COPY rootfs /
