@@ -25,7 +25,7 @@ RUN --mount=type=cache,target=/root/.cache/uv,id=uv \
         --excludes /mnt/dep-files/torch.txt
 
 # If on cuda, install cuda SDK, mainly for compiling dependencies for custom nodes
-RUN --mount=type=bind,dst=/tmp bash /tmp/install-cuda.sh
+RUN --mount=type=bind,dst=/mnt bash /mnt/install-cuda.sh
 
 # For ComfyUI-Manager to manage custom nodes dependencies
 RUN --mount=type=cache,target=/root/.cache/uv,id=uv \
