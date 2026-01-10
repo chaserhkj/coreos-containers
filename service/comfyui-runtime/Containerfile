@@ -6,7 +6,7 @@ ADD https://raw.githubusercontent.com/Comfy-Org/ComfyUI-Manager/refs/heads/main/
 
 COPY torch.txt /torch.txt
 
-FROM ghcr.io/astral-sh/uv:python3.13-trixie
+FROM ghcr.io/astral-sh/uv:python3.12-trixie
 ARG TORCH_BACKEND=nightly/rocm7.1
 
 RUN uv venv /venv
@@ -25,10 +25,6 @@ RUN --mount=type=cache,target=/root/.cache/uv,id=uv \
 # For ComfyUI-Manager to manage custom nodes dependencies
 RUN --mount=type=cache,target=/root/.cache/uv,id=uv \
     uv pip install pip uv
-
-# Other external dependencies required by various custom nodes
-RUN --mount=type=cache,target=/var/cache/apt,id=apt \
-    apt-get update && apt-get install -y cmake libgl1 ffmpeg
 
 # tini Init proxy
 RUN --mount=type=cache,target=/var/cache/apt,id=apt \
