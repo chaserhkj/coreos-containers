@@ -33,11 +33,12 @@ echo "[INFO] Prestart ENV exported"
 
 # Run custom install script, as provided by the mount point
 if [[ -f /app/install.sh ]]; then
+    echo "[INFO] Running custom install script"
     bash /app/install.sh
 fi
 
-echo "[INFO] Running ComfyUI-Manager fix"
 if [[ ! -f /venv/COMFYUI_CUSTOM_NODES_FIXED ]]; then
+    echo "[INFO] Running ComfyUI-Manager fix"
     python3 /app/ComfyUI/custom_nodes/ComfyUI-Manager/cm-cli.py fix all
     touch /venv/COMFYUI_CUSTOM_NODES_FIXED
 fi
