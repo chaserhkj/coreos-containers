@@ -37,3 +37,5 @@ ENTRYPOINT ["tini", "--"]
 CMD ["/app/entrypoint.sh"]
 
 EXPOSE 8188/tcp
+
+ENV TORCH_BACKEND=${TORCH_BACKEND}
