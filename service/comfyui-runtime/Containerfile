@@ -13,6 +13,8 @@ RUN uv venv /venv
 
 ENV VIRTUAL_ENV=/venv
 
+ENV TORCH_BACKEND=${TORCH_BACKEND}
+
 RUN --mount=type=cache,target=/root/.cache/uv,id=uv \
     --mount=from=dep-files,target=/mnt/dep-files \
     uv pip install -r /mnt/dep-files/torch.txt \
@@ -21,6 +23,9 @@ RUN --mount=type=cache,target=/root/.cache/uv,id=uv \
         --excludes /mnt/dep-files/torch.txt && \
     uv pip install -r /mnt/dep-files/comfyui-manager-deps.txt \
         --excludes /mnt/dep-files/torch.txt
+
+# If on cuda, install cuda SDK, mainly for compiling dependencies for custom nodes
+RUN --mount=type=bind,dst=/tmp bash /tmp/install-cuda.sh
 
 # For ComfyUI-Manager to manage custom nodes dependencies
 RUN --mount=type=cache,target=/root/.cache/uv,id=uv \
@@ -37,5 +42,3 @@ ENTRYPOINT ["tini", "--"]
 CMD ["/app/entrypoint.sh"]
 
 EXPOSE 8188/tcp
-
-ENV TORCH_BACKEND=${TORCH_BACKEND}
