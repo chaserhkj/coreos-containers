@@ -6,7 +6,7 @@ if [ -n "$ZSH_VERSION" ] && [ "$(emulate)" != "zsh" ]; then
 fi
 
 _prompt_sep() {
-    printf '%.0s-' $(seq 1 $((COLUMNS - 1)))
+    printf "%.0s$1" $(seq 1 $((COLUMNS - 1)))
 }
 
 _prompt_time() {
@@ -37,7 +37,7 @@ _get_prompt() {
     _cyan="\[$(tput setaf 6)\]"
     _white="\[$(tput setaf 7)\]"
     # Separator
-    _prompt_="$_dim""$(_prompt_sep)"'\n'"$_reset"
+    _prompt_="$_dim""$(_prompt_sep _)"'\n'"$_reset"
     # Status line
     # Time
     _prompt_+="$_set_cur$_blue$(_prompt_time)$_reset$_reset_cur"
@@ -90,7 +90,7 @@ _prompt() {
 if [ -n "$BASH_VERSION" ]; then
     PROMPT_COMMAND+=( _prompt )
     # Separator before each output 
-    PS0='$(tput dim; _prompt_sep; tput sgr0;)\n'
+    PS0='$(tput dim; _prompt_sep -; tput sgr0;)\n'
 elif [ -n "$ZSH_VERSION" ]; then
     # With bash this is provided by BLE, but for zsh we do it here
     return_code_prompt() {
@@ -112,7 +112,7 @@ elif [ -n "$ZSH_VERSION" ]; then
     }
     preexec_prompt() {
         tput dim
-        _prompt_sep
+        _prompt_sep -
         echo
         tput sgr0
     }
