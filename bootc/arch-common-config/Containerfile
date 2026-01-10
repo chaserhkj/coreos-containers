@@ -26,6 +26,11 @@ RUN --mount=type=bind,from=nix-static,target=/var/mnt \
 
 RUN useradd -M -G wheel hkj
 
+# zram generator, to use zram as swap and save memory
+RUN --mount=type=cache,target=/usr/lib/sysimage/lib/pacman/sync,id=pacman-sync \
+    --mount=type=cache,target=/usr/lib/sysimage/cache/pacman/pkg,id=pacman-cache \
+    pacman -Sy --needed --noconfirm zram-generator
+
 # Install BLE (Bash Line Editor) framework, and patch off C-r shortcuts
 RUN --mount=type=bind,from=blesh,target=/tmp \
     bash /tmp/ble-nightly/ble.sh --install /usr/share && \
