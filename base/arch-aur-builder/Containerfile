@@ -3,7 +3,7 @@ FROM docker.io/archlinux/archlinux
 
 RUN --mount=type=cache,target=/var/lib/pacman/sync,id=pacman-sync \
     --mount=type=cache,target=/var/cache/pacman/pkg,id=pacman-cache \
-    pacman -Syu --noconfirm && \
+    pacman -Syyu --noconfirm && \
     pacman -S --needed --noconfirm git base-devel
 
 RUN useradd -m -d /var/build -g wheel builder && \

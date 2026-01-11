@@ -53,6 +53,7 @@ RUN --mount=type=cache,target=/usr/lib/sysimage/lib/pacman/sync,id=pacman-sync \
     pacman-key --init && pacman -Sy && \
     pacman -S archlinux-keyring --noconfirm && \
     pacman -Qq | pacman -S --noconfirm - && \
+    pacman -Syyu --noconfirm && \
     rm -rf /home /root /usr/local /srv /mnt /opt && \
     mkdir -p /var/home /var/roothome /var/usrlocal /var/srv /var/opt /var/mnt && \
     ln -sT var/home /home && ln -sT var/roothome /root && \
