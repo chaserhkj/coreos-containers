@@ -10,6 +10,7 @@ FROM docker.io/archlinux/archlinux as ssh-key-dir
 
 RUN --mount=type=cache,target=/var/lib/pacman/sync,id=pacman-sync \
     --mount=type=cache,target=/var/cache/pacman/pkg,id=pacman-cache \
+    pacman -Syyu --noconfirm && \
     pacman -Sy --noconfirm rust git make
 
 RUN git clone https://github.com/coreos/ssh-key-dir /work
@@ -23,6 +24,7 @@ FROM docker.io/archlinux/archlinux as cfsctl
 
 RUN --mount=type=cache,target=/var/lib/pacman/sync,id=pacman-sync \
     --mount=type=cache,target=/var/cache/pacman/pkg,id=pacman-cache \
+    pacman -Syyu --noconfirm && \
     pacman -Sy --noconfirm rust git make
 
 RUN git clone https://github.com/chaserhkj/composefs-rs /work
