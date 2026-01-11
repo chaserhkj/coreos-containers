@@ -1,0 +1,6 @@
+# From ../arch
+FROM distrobox-arch
+
+RUN --mount=type=cache,target=/var/lib/pacman/sync,id=pacman-sync \
+    --mount=type=cache,target=/var/cache/pacman/pkg,id=pacman-cache \
+    pacman -Sy vim alacritty tmux wlr-randr wqy-microhei labwc cage

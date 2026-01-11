@@ -1,0 +1,7 @@
+default:
+    just build arch
+    just build arch-common
+    just build arch-steam
+
+build variant:
+    podman build {{variant}} -t distrobox-{{variant}}
