@@ -1,6 +1,7 @@
 set dotenv-load := true
 podman := require("podman")
 image_ref := env("ARCH_BOOTC_HOST_IMAGE_REF", "docker.io/chaserhkj/arch-bootc-host")
+build_flags := env("PODMAN_BUILD_FLAGS", "")
 
 default: prepare-all-images
 
@@ -19,18 +20,18 @@ configure-image host:
     [ -n $base_img ] && base_flag="--from=$base_img"
     export CREDS="$(gpg --decrypt creds.gpg)" || exit 1
 
-    podman build --secret=id=creds,env=CREDS --iidfile {{host}}.intermediate.id -f Containerfile "$base_flag" "$host_dir"
+    podman build --secret=id=creds,env=CREDS --iidfile {{host}}.intermediate.id -f Containerfile "$base_flag" "$host_dir" {{build_flags}}
 
     if [ -f $host_dir/Containerfile ]; then
         read -r intermediate_img < {{host}}.intermediate.id
-        podman build --iidfile {{host}}.pre-live.id --build-arg BASE=$intermediate_img "$host_dir"
+        podman build --iidfile {{host}}.pre-live.id --build-arg BASE=$intermediate_img "$host_dir" {{build_flags}}
     else
         cp {{host}}.intermediate.id {{host}}.pre-live.id
     fi
 
     read -r pre_live_image < {{host}}.pre-live.id
     if [ -f $host_dir/LIVE ]; then
-        podman build --iidfile {{host}}.final.id -f Containerfile.live --build-arg BASE=$pre_live_image "$host_dir"
+        podman build --iidfile {{host}}.final.id -f Containerfile.live --build-arg BASE=$pre_live_image "$host_dir" {{build_flags}}
         read -r final_image < {{host}}.final.id
     else
         final_image=$pre_live_image

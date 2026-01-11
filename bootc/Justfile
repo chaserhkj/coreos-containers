@@ -1,6 +1,6 @@
 mod arch-config 'arch-host-config/'
 
-build_flags := ""
+build_flags := env("PODMAN_BUILD_FLAGS", "")
 
 default:
     just build-image arch-k0s
