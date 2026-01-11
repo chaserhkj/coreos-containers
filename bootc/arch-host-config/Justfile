@@ -3,10 +3,16 @@ podman := require("podman")
 image_ref := env("ARCH_BOOTC_HOST_IMAGE_REF", "docker.io/chaserhkj/arch-bootc-host")
 build_flags := env("PODMAN_BUILD_FLAGS", "")
 
-default: prepare-all-images
+default: prepare-all-persistent
 
 prepare-all-images:
     for host in $(ls hosts); do just prepare-image $host; done;
+
+prepare-all-persistent:
+    for host in $(ls hosts); do [ -f "hosts/$host/LIVE" ] && continue; just prepare-image $host; done;
+
+prepare-all-live:
+    for host in $(ls hosts); do [ -f "hosts/$host/LIVE" ] || continue; just prepare-image $host; done;
 
 prepare-image host: (configure-image host)
     podman tag localhost/bootc-arch-host:{{host}} {{image_ref}}:{{host}}
